@@ -152,6 +152,67 @@ export const apiKeys = pgTable("api_keys", {
   lastUsedAt: ts("last_used_at"),
 });
 
+/** Une ligne par stagiaire et par créneau : signé présent ou déclaré absent. */
+export const presence = pgEnum("presence", ["present", "absent"]);
+export const attendance = pgTable(
+  "attendance",
+  {
+    sessionId: text("session_id").notNull().references(() => sessions.id, { onDelete: "cascade" }),
+    /** Début du créneau : les créneaux sont recréés à chaque enregistrement de la session. */
+    slotStart: ts("slot_start").notNull(),
+    traineeId: text("trainee_id").notNull().references(() => trainees.id, { onDelete: "cascade" }),
+    presence: presence("presence").notNull(),
+    /** Tracé SVG de la signature (commandes M et L). */
+    signature: text("signature"),
+    recordedBy: text("recorded_by").references(() => trainers.id, { onDelete: "set null" }),
+    recordedAt: ts("recorded_at").notNull().defaultNow(),
+  },
+  (t) => [primaryKey({ columns: [t.sessionId, t.slotStart, t.traineeId] })],
+);
+
+export const trainerSignatures = pgTable(
+  "trainer_signatures",
+  {
+    sessionId: text("session_id").notNull().references(() => sessions.id, { onDelete: "cascade" }),
+    slotStart: ts("slot_start").notNull(),
+    trainerId: text("trainer_id").notNull().references(() => trainers.id, { onDelete: "cascade" }),
+    signature: text("signature").notNull(),
+    signedAt: ts("signed_at").notNull().defaultNow(),
+  },
+  (t) => [primaryKey({ columns: [t.sessionId, t.slotStart, t.trainerId] })],
+);
+
+export const outcome = pgEnum("outcome", ["passed", "failed"]);
+export const testResults = pgTable(
+  "test_results",
+  {
+    sessionId: text("session_id").notNull().references(() => sessions.id, { onDelete: "cascade" }),
+    traineeId: text("trainee_id").notNull().references(() => trainees.id, { onDelete: "cascade" }),
+    theory: outcome("theory"),
+    theoryScore: integer("theory_score"),
+    practice: outcome("practice"),
+    categories: text("categories"),
+    comment: text("comment"),
+    testerId: text("tester_id").references(() => trainers.id, { onDelete: "set null" }),
+    recordedAt: ts("recorded_at").notNull().defaultNow(),
+  },
+  (t) => [primaryKey({ columns: [t.sessionId, t.traineeId] })],
+);
+
+/** Identité de l'organisme, reprise sur les documents. Une seule ligne, d'identifiant « main ». */
+export const organization = pgTable("organization", {
+  id: text("id").primaryKey().default("main"),
+  name: text("name").notNull(),
+  address: text("address"),
+  siret: text("siret"),
+  /** Numéro de déclaration d'activité. */
+  nda: text("nda"),
+  phone: text("phone"),
+  email: text("email"),
+  /** Responsable qui signe les attestations. */
+  signatory: text("signatory"),
+});
+
 export const sessionsRelations = relations(sessions, ({ many }) => ({
   slots: many(slots),
   assignments: many(assignments),

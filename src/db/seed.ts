@@ -25,8 +25,18 @@ const firstNames = ["Camille", "Lucas", "Manon", "Hugo", "Inès", "Louis", "Chlo
 const lastNames = ["Lefèvre", "Moreau", "Girard", "Roux", "Fournier", "Bonnet", "Lambert", "Fontaine", "Rousseau", "Vincent", "Muller", "Faure", "André", "Mercier", "Blanc", "Guérin"];
 
 async function main() {
-  await db.execute(sql`TRUNCATE sites, rooms, trainers, equipment, courses, clients, trainees, sessions, slots, assignments, session_equipment, enrollments, unavailabilities, certifications, api_keys CASCADE`);
+  await db.execute(sql`TRUNCATE sites, rooms, trainers, equipment, courses, clients, trainees, sessions, slots, assignments, session_equipment, enrollments, unavailabilities, certifications, api_keys, attendance, trainer_signatures, test_results, organization CASCADE`);
 
+  await db.insert(t.organization).values({
+    id: "main",
+    name: "Centre de formation Pyrénées Sécurité",
+    address: "12 avenue des Lilas, 64000 Pau",
+    siret: "000 000 000 00000",
+    nda: "75 64 00000 64",
+    phone: "05 00 00 00 00",
+    email: "contact@example.com",
+    signatory: "Anne Dupuis, directrice",
+  });
   await db.insert(t.sites).values([
     { id: "pau", name: "Centre de Pau", city: "Pau" },
     { id: "bayonne", name: "Agence de Bayonne", city: "Bayonne" },

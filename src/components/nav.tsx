@@ -13,6 +13,7 @@ const links = [
   { href: "/formations", label: "Formations" },
   { href: "/stagiaires", label: "Stagiaires" },
   { href: "/integrations", label: "API et agendas" },
+  { href: "/parametres", label: "Paramètres" },
 ];
 
 export function Nav() {

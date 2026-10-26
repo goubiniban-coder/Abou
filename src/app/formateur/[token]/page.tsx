@@ -1,11 +1,13 @@
 import { eq } from "drizzle-orm";
 import { headers } from "next/headers";
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import { db, schema as t } from "@/db";
 import { trainerAddUnavailability, trainerDeleteUnavailability } from "@/app/ref-actions";
-import { detectAllConflicts, parisDay, trainerSlots } from "@/domain";
+import { addDays, attendanceSheet, signingOpen, detectAllConflicts, parisDay, sheetComplete, slotKey, trainerSlots } from "@/domain";
 import { formatDay, formatTime, fullName, roleLabel, slotKindLabel } from "@/lib/format";
 import { loadContext } from "@/server/planning";
+import { loadRecords } from "@/server/attendance";
 
 export const metadata = { title: "Mon planning" };
 
@@ -30,6 +32,19 @@ export default async function TrainerSpace({ params }: PageProps<"/formateur/[to
   const unavailable = ctx.unavailabilities.filter((u) => u.resourceType === "trainer" && u.resourceId === trainer.id && parisDay(u.end) >= today);
   const [trainees, clients] = await Promise.all([db.select().from(t.trainees), db.select().from(t.clients)]);
 
+  const now = new Date();
+  const records = await loadRecords(mine.map((s) => s.id));
+  const sheetOf = (sessionId: string, start: string) => {
+    const s = mine.find((x) => x.id === sessionId)!;
+    const r = records.get(sessionId)!;
+    return attendanceSheet(s, r.attendance, r.trainerSignatures).find((x) => slotKey(x.slot.start) === slotKey(start))!;
+  };
+  const since = addDays(today, -30);
+  const toComplete = mine
+    .flatMap((s) => trainerSlots(s, trainer.id).map((slot) => ({ s, slot })))
+    .filter(({ s, slot }) => parisDay(slot.start) >= since && parisDay(slot.start) < today && !sheetComplete(sheetOf(s.id, slot.start)))
+    .sort((a, b) => a.slot.start.localeCompare(b.slot.start));
+
   return (
     <div className="mx-auto max-w-lg space-y-4 p-4 pb-16">
       <header>
@@ -41,6 +56,24 @@ export default async function TrainerSpace({ params }: PageProps<"/formateur/[to
         <section className="rounded-lg bg-red-50 p-3 text-sm text-red-800">
           <p className="font-semibold">À signaler au planificateur</p>
           <ul className="mt-1 list-disc pl-5">{myConflicts.map((c, i) => <li key={i}>{c.message}</li>)}</ul>
+        </section>
+      )}
+
+      {toComplete.length > 0 && (
+        <section className="rounded-lg bg-amber-50 p-3 text-sm text-amber-900">
+          <p className="font-semibold">Émargements à compléter</p>
+          <ul className="mt-1 space-y-1">
+            {toComplete.map(({ s, slot }) => {
+              const course = ctx.courses.find((c) => c.id === s.courseId);
+              return (
+                <li key={`${s.id}${slot.start}`}>
+                  <Link className="underline" href={`/formateur/${token}/emargement/${s.id}?slot=${encodeURIComponent(slotKey(slot.start))}`}>
+                    {formatDay(parisDay(slot.start))} {formatTime(slot.start)} · {course?.code}
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
         </section>
       )}
 
@@ -73,6 +106,19 @@ export default async function TrainerSpace({ params }: PageProps<"/formateur/[to
                   <div className="border-t border-slate-100 p-3 text-sm">
                     <p className="mb-1 font-medium">{names.length} stagiaire{names.length > 1 ? "s" : ""}</p>
                     <ul className="text-slate-600">{names.map((n) => <li key={n.id}>{fullName(n)}</li>)}</ul>
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      {signingOpen(slot.start, now) ? (
+                        <Link className="btn-primary flex-1" href={`/formateur/${token}/emargement/${s.id}?slot=${encodeURIComponent(slotKey(slot.start))}`}>
+                          Émargement · {sheetOf(s.id, slot.start).present.length + sheetOf(s.id, slot.start).absent.length}/{names.length}
+                          {sheetOf(s.id, slot.start).trainerSigned.length > 0 && " ✓"}
+                        </Link>
+                      ) : (
+                        <span className="text-xs text-slate-400">Émargement ouvert à {formatTime(new Date(Date.parse(slot.start) - 15 * 60_000).toISOString())}</span>
+                      )}
+                      {slot.kind === "test" && (roles.includes("Testeur") || !course?.testUnitsPerTrainee) && (
+                        <Link className="btn-secondary flex-1" href={`/formateur/${token}/resultats/${s.id}`}>Saisir les résultats</Link>
+                      )}
+                    </div>
                   </div>
                 </details>
               );
