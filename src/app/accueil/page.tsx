@@ -56,7 +56,7 @@ export default async function WelcomeScreen({ searchParams }: PageProps<"/accuei
       </div>
       <div className="mt-10 flex gap-4 text-sm text-slate-500">
         {ctx.sites.map((s) => <Link key={s.id} href={`/accueil?site=${s.id}`} className="hover:text-white">{s.name}</Link>)}
-        <Link href="/planning" className="ml-auto hover:text-white">Retour au planning</Link>
+        <Link href="/tableau-de-bord" className="ml-auto hover:text-white">Retour à Optitam</Link>
       </div>
     </div>
   );
