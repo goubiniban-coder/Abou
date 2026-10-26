@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { detectConflicts, shiftParisDays, suggestEquipment, suggestRooms, suggestTrainers, type AssignmentRole, type Conflict, type Session } from "@/domain";
-import { BlockingConflictError, getSession, loadContext, saveSession } from "@/server/planning";
+import { BlockingConflictError, deleteSession, getSession, loadContext, saveSession } from "@/server/planning";
 
 export type ActionResult = { ok: true; conflicts: Conflict[]; id: string } | { ok: false; blocked: true; conflicts: Conflict[] } | { ok: false; blocked: false; error: string };
 
@@ -68,4 +68,9 @@ export async function checkSessionAction(session: Session) {
       equipment: Object.fromEntries((course?.requiredEquipmentKinds ?? []).map((k) => [k, pack(suggestEquipment(session, k, ctx))])),
     },
   };
+}
+
+export async function deleteSessionAction(id: string) {
+  await deleteSession(id);
+  revalidatePath("/", "layout");
 }
