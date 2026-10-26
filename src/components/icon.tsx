@@ -17,6 +17,7 @@ const paths = {
   mail: "M3 5h18v14H3zM3 6l9 7 9-7",
   check: "M5 12l5 5L20 7",
   arrow: "M5 12h14M13 6l6 6-6 6",
+  logout: "M15 4h4a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1h-4M10 17l-5-5 5-5M5 12h11",
   spark: "M12 3v4M12 17v4M3 12h4M17 12h4M6 6l2.5 2.5M15.5 15.5L18 18M6 18l2.5-2.5M15.5 8.5L18 6",
 } as const;
 
