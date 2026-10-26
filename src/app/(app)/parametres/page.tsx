@@ -22,6 +22,9 @@ export default async function SettingsPage({ searchParams }: PageProps<"/paramet
         <Field label="Signataire des attestations" hint="Nom et fonction, par exemple « Anne Dupuis, directrice »" className="sm:col-span-2">
           <input name="signatory" defaultValue={org.signatory ?? ""} className="input" />
         </Field>
+        <Field label="TVA sur les devis (%)" hint="0 si l'organisme est exonéré (article 261-4-4° du CGI)">
+          <input name="vatRate" type="number" min={0} max={100} defaultValue={org.vatRate} className="input" />
+        </Field>
         <div className="sm:col-span-2"><button className="btn-primary">Enregistrer</button></div>
       </form>
     </div>

@@ -72,6 +72,7 @@ export async function loadContext(): Promise<PlanningContext> {
       testUnitsPerTrainee: c.testUnitsPerTrainee ?? undefined,
       validityMonths: c.validityMonths ?? undefined,
       color: c.color ?? undefined,
+      pricePerTrainee: c.pricePerTrainee ?? undefined,
     })),
     sessions,
     unavailabilities: unavailabilities.map((u) => ({ ...u, start: iso(u.start), end: iso(u.end), reason: u.reason ?? undefined })),

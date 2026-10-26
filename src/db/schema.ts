@@ -1,6 +1,6 @@
 import { relations } from "drizzle-orm";
 import { boolean, date, index, integer, jsonb, pgEnum, pgTable, primaryKey, text, timestamp } from "drizzle-orm/pg-core";
-import type { Competence } from "@/domain";
+import type { Competence, DateOption } from "@/domain";
 
 const id = () => text("id").primaryKey().$defaultFn(() => crypto.randomUUID());
 const ts = (name: string) => timestamp(name, { withTimezone: true, mode: "string" });
@@ -50,6 +50,8 @@ export const courses = pgTable("courses", {
   testUnitsPerTrainee: integer("test_units_per_trainee"),
   validityMonths: integer("validity_months"),
   color: text("color"),
+  /** Prix par stagiaire, hors taxes, en euros ; repris sur les devis. */
+  pricePerTrainee: integer("price_per_trainee"),
 });
 
 export const clients = pgTable("clients", {
@@ -211,6 +213,33 @@ export const organization = pgTable("organization", {
   email: text("email"),
   /** Responsable qui signe les attestations. */
   signatory: text("signatory"),
+  /** Taux de TVA des devis, en % ; 0 pour un organisme exonéré (article 261-4-4° du CGI). */
+  vatRate: integer("vat_rate").notNull().default(20),
+});
+
+export const proposalStatus = pgEnum("proposal_status", ["open", "accepted", "declined"]);
+
+/** Dates proposées à un client pour recycler ses stagiaires ; il en choisit une depuis un lien personnel. */
+export const proposals = pgTable("proposals", {
+  id: id(),
+  /** Jeton secret du lien envoyé au client. */
+  token: text("token").notNull().unique().$defaultFn(() => crypto.randomUUID()),
+  /** Numéro de devis, attribué à la création. */
+  number: text("number").notNull().unique(),
+  clientId: text("client_id").references(() => clients.id, { onDelete: "set null" }),
+  courseId: text("course_id").notNull().references(() => courses.id),
+  siteId: text("site_id").notNull().references(() => sites.id),
+  traineeIds: jsonb("trainee_ids").$type<string[]>().notNull(),
+  options: jsonb("options").$type<DateOption[]>().notNull(),
+  pricePerTrainee: integer("price_per_trainee"),
+  status: proposalStatus("status").notNull().default("open"),
+  chosenOption: integer("chosen_option"),
+  sessionId: text("session_id").references(() => sessions.id, { onDelete: "set null" }),
+  /** Nom saisi par le client au moment d'accepter. */
+  acceptedBy: text("accepted_by"),
+  acceptedAt: ts("accepted_at"),
+  expiresOn: date("expires_on", { mode: "string" }).notNull(),
+  createdAt: ts("created_at").notNull().defaultNow(),
 });
 
 export const sessionsRelations = relations(sessions, ({ many }) => ({

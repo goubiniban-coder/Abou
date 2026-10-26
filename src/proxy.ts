@@ -2,7 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { AUTH_COOKIE, authEnabled, verifySessionToken } from "@/lib/auth";
 
 // Pages ouvertes sans connexion : elles ont leur propre protection (jeton personnel ou clé d'API).
-const PUBLIC = [/^\/login/, /^\/formateur\//, /^\/api\/calendar\//, /^\/api\/v1\//, /^\/api\/openapi/, /^\/manifest\.webmanifest$/, /^\/icon\.svg$/];
+const PUBLIC = [/^\/login/, /^\/formateur\//, /^\/proposition\//, /^\/api\/calendar\//, /^\/api\/v1\//, /^\/api\/openapi/, /^\/manifest\.webmanifest$/, /^\/icon\.svg$/];
 
 export async function proxy(request: NextRequest) {
   const { pathname, search } = request.nextUrl;

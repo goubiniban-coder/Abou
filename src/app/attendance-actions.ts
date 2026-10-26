@@ -141,6 +141,7 @@ export async function saveOrganization(f: FormData) {
     phone: textOf(f.get("phone")),
     email: textOf(f.get("email")),
     signatory: textOf(f.get("signatory")),
+    vatRate: Math.max(0, Math.min(100, Number.parseInt(textOf(f.get("vatRate")) ?? "20", 10) || 0)),
   };
   await db.insert(t.organization).values({ id: "main", ...values }).onConflictDoUpdate({ target: t.organization.id, set: values });
   revalidatePath("/", "layout");

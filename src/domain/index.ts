@@ -5,3 +5,4 @@ export * from "./suggestions";
 export * from "./caces";
 export * from "./ical";
 export * from "./attendance";
+export * from "./proposals";
