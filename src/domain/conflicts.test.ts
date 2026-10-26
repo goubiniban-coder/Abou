@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { detectAllConflicts, detectConflicts } from "./conflicts";
+import { detectAllConflicts, detectConflicts, trainerSlots } from "./conflicts";
 import { day, demoContext, session, trainees } from "./fixtures";
 
 const codes = (cs: { code: string }[]) => cs.map((c) => c.code).sort();
@@ -104,5 +104,24 @@ describe("detectAllConflicts", () => {
     const a = session({ id: "a", courseId: "sst", slots: day("2026-11-03"), roomId: "salle-a", assignments: [{ role: "theory", trainerId: "lea" }] });
     ctx.sessions.push(a, { ...a, id: "b", assignments: [] });
     expect(codes(detectAllConflicts(ctx))).toEqual(["room_double_booked"]);
+  });
+});
+
+describe("mobilisation par rôle", () => {
+  it("un testeur n'est mobilisé que sur les créneaux de test", () => {
+    const ctx = demoContext();
+    // Marc fait passer les tests le 2e jour d'un CACES, et anime un SST le 1er jour.
+    ctx.sessions.push(
+      session({ id: "caces", courseId: "caces-r489", slots: [...day("2026-11-03", "practice"), ...day("2026-11-04", "test")], roomId: "salle-a", equipmentIds: ["chariot-1"], traineeIds: trainees(2), assignments: [{ role: "practice", trainerId: "lea" }, { role: "tester", trainerId: "marc" }] }),
+    );
+    const sst = session({ id: "sst", courseId: "sst", slots: day("2026-11-03"), roomId: "salle-b", assignments: [{ role: "theory", trainerId: "lea" }] });
+    expect(codes(detectConflicts(sst, ctx))).toEqual(["trainer_double_booked"]); // Léa, pas Marc
+    const sst2 = { ...sst, assignments: [{ role: "theory" as const, trainerId: "marc" }] };
+    expect(detectConflicts(sst2, ctx)).toEqual([]);
+  });
+
+  it("le formateur théorie couvre la pratique quand personne d'autre n'y est affecté", () => {
+    const s = session({ id: "x", courseId: "sst", slots: [...day("2026-11-03", "theory"), ...day("2026-11-04", "practice")], assignments: [{ role: "theory", trainerId: "lea" }] });
+    expect(trainerSlots(s, "lea")).toHaveLength(4);
   });
 });

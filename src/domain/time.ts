@@ -79,3 +79,13 @@ export function frenchDay(date: string): string {
     new Date(`${dayOf(date)}T12:00:00Z`),
   );
 }
+
+/** Heure locale à Paris (« 08:30 ») d'un instant ISO. */
+export function parisClock(iso: string): string {
+  return new Intl.DateTimeFormat("fr-FR", { timeZone: TIME_ZONE, hour: "2-digit", minute: "2-digit", hourCycle: "h23" }).format(new Date(iso));
+}
+
+/** Décale un instant d'un nombre de jours en gardant la même heure à Paris, changement d'heure compris. */
+export function shiftParisDays(iso: string, days: number): string {
+  return parisTime(addDays(parisDay(iso), days), parisClock(iso));
+}

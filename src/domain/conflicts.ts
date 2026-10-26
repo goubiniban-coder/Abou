@@ -32,6 +32,26 @@ export interface Conflict {
 
 const trainerName = (t: Trainer) => `${t.firstName} ${t.lastName}`;
 
+const roleSlotKind = { theory: "theory", practice: "practice", tester: "test" } as const;
+
+/**
+ * Créneaux où un formateur est réellement mobilisé. Chaque créneau revient aux formateurs
+ * dont le rôle correspond à son type (théorie, pratique, test). Un créneau de théorie ou de
+ * pratique sans formateur dédié revient aux autres formateurs de la session ; un testeur
+ * n'est mobilisé que sur les tests, sauf si la session n'en comporte pas.
+ */
+export function trainerSlots(session: Session, trainerId: Id): Slot[] {
+  const roles = session.assignments.filter((a) => a.trainerId === trainerId).map((a) => a.role);
+  if (roles.length === 0) return [];
+  const hasTests = session.slots.some((s) => s.kind === "test");
+  return session.slots.filter((slot) => {
+    if (roles.some((r) => roleSlotKind[r] === slot.kind)) return true;
+    const dedicated = session.assignments.some((a) => roleSlotKind[a.role] === slot.kind);
+    if (dedicated) return false;
+    return roles.some((r) => r !== "tester") || !hasTests;
+  });
+}
+
 /** Sessions actives qui partagent au moins un créneau avec `session`. */
 function overlappingSessions(session: Session, ctx: PlanningContext): { other: Session; slot: Slot }[] {
   const out: { other: Session; slot: Slot }[] = [];
@@ -90,7 +110,7 @@ export function detectConflicts(session: Session, ctx: PlanningContext): Conflic
       add({
         code: "room_too_small",
         severity: "error",
-        message: `La salle ${room.name} accueille ${room.capacity} personnes pour ${session.traineeIds.length} inscrits.`,
+        message: `${room.name} accueille ${room.capacity} personnes pour ${session.traineeIds.length} inscrits.`,
         resource: { type: "room", id: room.id },
       });
     }
@@ -98,7 +118,7 @@ export function detectConflicts(session: Session, ctx: PlanningContext): Conflic
       add({
         code: "room_other_site",
         severity: "warning",
-        message: `La salle ${room.name} n'est pas sur le site de la session.`,
+        message: `${room.name} n'est pas sur le site de la session.`,
         resource: { type: "room", id: room.id },
       });
     }
@@ -107,7 +127,7 @@ export function detectConflicts(session: Session, ctx: PlanningContext): Conflic
         add({
           code: "room_double_booked",
           severity: "error",
-          message: `La salle ${room.name} est déjà réservée le ${frenchDay(parisDay(slot.start))}.`,
+          message: `${room.name} est déjà réservée le ${frenchDay(parisDay(slot.start))}.`,
           resource: { type: "room", id: room.id },
           otherSessionId: other.id,
           day: parisDay(slot.start),
@@ -130,8 +150,12 @@ export function detectConflicts(session: Session, ctx: PlanningContext): Conflic
     const trainer = ctx.trainers.find((t) => t.id === trainerId);
     if (!trainer) continue;
     const name = trainerName(trainer);
-    for (const { other, slot } of others) {
-      if (other.assignments.some((a) => a.trainerId === trainerId)) {
+    const mine = trainerSlots(session, trainerId);
+    for (const other of ctx.sessions) {
+      if (other.id === session.id || other.status === "cancelled") continue;
+      const theirs = trainerSlots(other, trainerId);
+      const slot = mine.find((s) => theirs.some((o) => overlaps(s, o)));
+      if (slot) {
         add({
           code: "trainer_double_booked",
           severity: "error",
@@ -212,7 +236,7 @@ export function detectConflicts(session: Session, ctx: PlanningContext): Conflic
 
   // Indisponibilités
   const used: { type: ResourceType; id: Id; label: string }[] = [
-    ...(room ? [{ type: "room" as const, id: room.id, label: `La salle ${room.name}` }] : []),
+    ...(room ? [{ type: "room" as const, id: room.id, label: room.name }] : []),
     ...trainerIds.flatMap((id) => {
       const t = ctx.trainers.find((x) => x.id === id);
       return t ? [{ type: "trainer" as const, id, label: trainerName(t) }] : [];
@@ -222,7 +246,8 @@ export function detectConflicts(session: Session, ctx: PlanningContext): Conflic
   for (const r of used) {
     for (const u of ctx.unavailabilities) {
       if (u.resourceType !== r.type || u.resourceId !== r.id) continue;
-      const slot = session.slots.find((s) => overlaps(s, u));
+      const busy = r.type === "trainer" ? trainerSlots(session, r.id) : session.slots;
+      const slot = busy.find((s) => overlaps(s, u));
       if (slot) {
         add({
           code: "resource_unavailable",
@@ -244,7 +269,8 @@ export function detectAllConflicts(ctx: PlanningContext): Conflict[] {
   const out: Conflict[] = [];
   for (const s of ctx.sessions) {
     for (const c of detectConflicts(s, ctx)) {
-      const pair = c.otherSessionId ? [c.sessionId, c.otherSessionId].sort().join("|") : c.sessionId;
+      // Une double réservation concerne deux sessions, un dépassement de capacité toutes celles du jour.
+      const pair = c.code === "tester_over_capacity" ? "" : c.otherSessionId ? [c.sessionId, c.otherSessionId].sort().join("|") : c.sessionId;
       const key = `${c.code}|${pair}|${c.resource?.id ?? ""}|${c.day ?? ""}`;
       if (seen.has(key)) continue;
       seen.add(key);
