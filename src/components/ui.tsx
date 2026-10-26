@@ -6,8 +6,11 @@ import { formatDate, formatTime } from "@/lib/format";
 
 export function PageHeader({ title, action }: { title: string; action?: { href: string; label: string } }) {
   return (
-    <div className="mb-4 flex flex-wrap items-center gap-3">
-      <h1 className="text-xl font-semibold">{title}</h1>
+    <div className="mb-5 flex flex-wrap items-center gap-3">
+      <h1 className="text-2xl font-extrabold tracking-tight">
+        {title}
+        <span className="mt-1 block h-1.5 w-10 rounded-full bg-accent-400" />
+      </h1>
       {action && <Link href={action.href} className="btn-primary ml-auto">{action.label}</Link>}
     </div>
   );
@@ -27,10 +30,10 @@ export function Table({ head, children }: { head: string[]; children: ReactNode 
   return (
     <div className="card overflow-x-auto">
       <table className="w-full text-sm">
-        <thead className="bg-slate-50 text-left text-xs text-slate-500">
+        <thead className="bg-brand-50/60 text-left text-xs text-brand-800">
           <tr>{head.map((h) => <th key={h} className="px-3 py-2 font-medium">{h}</th>)}</tr>
         </thead>
-        <tbody className="[&>tr]:border-t [&>tr]:border-slate-100 [&_td]:px-3 [&_td]:py-2">{children}</tbody>
+        <tbody className="[&>tr]:border-t [&>tr]:border-slate-100 [&>tr]:transition [&>tr:hover]:bg-brand-50/40 [&_td]:px-3 [&_td]:py-2.5">{children}</tbody>
       </table>
     </div>
   );
@@ -40,11 +43,11 @@ export function Badge({ children, tone = "slate" }: { children: ReactNode; tone?
   const tones = {
     slate: "bg-slate-100 text-slate-700",
     red: "bg-red-100 text-red-800",
-    amber: "bg-amber-100 text-amber-800",
-    green: "bg-emerald-100 text-emerald-800",
+    amber: "bg-accent-100 text-amber-800",
+    green: "bg-brand-100 text-brand-800",
     blue: "bg-brand-100 text-brand-700",
   };
-  return <span className={`inline-block rounded px-1.5 py-0.5 text-xs font-medium ${tones[tone]}`}>{children}</span>;
+  return <span className={`inline-block rounded-full px-2 py-0.5 text-xs font-semibold ${tones[tone]}`}>{children}</span>;
 }
 
 export function DeleteButton({ kind, id, back, list }: { kind: string; id: string; back: string; list: string }) {

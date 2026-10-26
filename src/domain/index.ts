@@ -6,3 +6,4 @@ export * from "./caces";
 export * from "./ical";
 export * from "./attendance";
 export * from "./proposals";
+export * from "./dashboard";
