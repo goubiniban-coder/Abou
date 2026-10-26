@@ -15,9 +15,6 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           </span>
         </Link>
         <Nav />
-        <Link href="/accueil" className="mt-auto hidden items-center gap-2 rounded-xl px-3 py-2 text-xs text-brand-100/70 hover:bg-white/10 hover:text-white md:flex">
-          <Icon name="tv" className="size-4" /> Écran d&apos;accueil
-        </Link>
       </aside>
       <main className="min-w-0 flex-1 p-4 md:p-8">{children}</main>
     </div>
