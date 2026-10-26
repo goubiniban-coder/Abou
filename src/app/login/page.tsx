@@ -1,6 +1,6 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-import { BookGlobe } from "@/components/book-globe";
+import { Globe3D } from "@/components/globe-3d";
 import { Icon, type IconName } from "@/components/icon";
 import { AUTH_COOKIE, cookieOptions, createSessionToken } from "@/lib/auth";
 
@@ -15,7 +15,7 @@ async function login(form: FormData) {
   redirect(safeNext);
 }
 
-const TITLE = ["Planifiez.", "Formez.", "Certifiez."];
+const TITLE = ["Vos sessions", "tournent", "toutes seules."];
 
 const PROMISES: { icon: IconName; label: string }[] = [
   { icon: "calendar", label: "Planning sans conflit" },
@@ -46,7 +46,7 @@ export default async function LoginPage({ searchParams }: PageProps<"/login">) {
 
         <div className="relative mx-auto grid max-w-6xl items-center gap-6 px-5 pb-14 lg:min-h-[calc(100vh-80px)] lg:grid-cols-[1fr_1.05fr] lg:pb-10">
           <div className="order-2 lg:order-1">
-            <h1 className="text-5xl leading-[0.95] font-extrabold tracking-tight text-brand-900 md:text-7xl">
+            <h1 className="text-5xl leading-[0.95] font-extrabold tracking-tight text-brand-900 md:text-6xl xl:text-7xl">
               {TITLE.map((word, i) => (
                 <span key={word} className="rise block" style={{ animationDelay: `${i * 120}ms` }}>
                   {i === TITLE.length - 1 ? <span className="bg-gradient-to-r from-brand-500 to-brand-700 bg-clip-text text-transparent">{word}</span> : word}
@@ -54,7 +54,7 @@ export default async function LoginPage({ searchParams }: PageProps<"/login">) {
               ))}
             </h1>
             <p className="rise mt-5 max-w-md text-lg text-slate-600" style={{ animationDelay: "400ms" }}>
-              Le planning des organismes de formation qui se tient tout seul : formateurs, salles, engins et CACES, sans un seul conflit.
+              Formateurs, salles, engins et CACES gravitent autour de votre planning. Optitam les aligne, sans un seul conflit.
             </p>
 
             <form action={login} className="rise card mt-7 flex max-w-md flex-col gap-3 p-4 sm:flex-row sm:items-end" style={{ animationDelay: "520ms" }}>
@@ -79,7 +79,7 @@ export default async function LoginPage({ searchParams }: PageProps<"/login">) {
           </div>
 
           <div className="order-1 lg:order-2">
-            <BookGlobe className="mx-auto w-[min(88vw,340px)] lg:w-full lg:max-w-[540px]" />
+            <Globe3D className="mx-auto w-[min(88vw,340px)] lg:w-full lg:max-w-[540px]" />
           </div>
         </div>
       </section>
@@ -90,10 +90,10 @@ export default async function LoginPage({ searchParams }: PageProps<"/login">) {
           <div>
             <p className="text-sm font-bold tracking-widest text-brand-600 uppercase">À propos d&apos;Optitam</p>
             <h2 className="mt-2 text-3xl font-extrabold tracking-tight text-brand-900 md:text-4xl">
-              Le planning sur lequel les centres de formation s&apos;appuient.
+              Tout gravite autour de vos sessions.
             </h2>
             <p className="mt-3 text-lg text-slate-600">
-              Des centaines de sessions, <span className="font-bold text-brand-700">zéro conflit</span>.
+              Pensé pour les organismes de formation : des centaines de sessions par an, <span className="font-bold text-brand-700">zéro conflit</span>.
             </p>
           </div>
           <ul className="grid gap-3 sm:grid-cols-2">
