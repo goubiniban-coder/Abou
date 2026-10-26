@@ -55,6 +55,95 @@ body {
   @apply rounded-2xl border border-slate-200/70 bg-white shadow-sm shadow-slate-900/5;
 }
 
+/* Globe et livres en orbite, écran de connexion. */
+.globe-scene {
+  container-type: size;
+  perspective: 1400px;
+  transform-style: preserve-3d;
+}
+.orbit-plane {
+  transform-style: preserve-3d;
+  transform: rotateZ(var(--turn)) rotateX(var(--tilt));
+}
+.globe-orbits,
+.orbit-spin,
+.orbit-slot,
+.orbit-face {
+  transform-style: preserve-3d;
+}
+.orbit-spin {
+  animation: orbit-spin linear infinite;
+}
+.orbit-face {
+  animation: orbit-face linear infinite;
+}
+.globe-network {
+  transform-box: view-box;
+  transform-origin: 200px 200px;
+  animation: globe-sway 14s ease-in-out infinite alternate;
+}
+.globe-sphere {
+  transform-box: view-box;
+  transform-origin: 200px 200px;
+  animation: globe-bob 6s ease-in-out infinite alternate;
+}
+.globe-ball {
+  animation: globe-float 4.5s ease-in-out infinite alternate;
+}
+@keyframes orbit-spin {
+  to {
+    transform: rotateZ(360deg);
+  }
+}
+@keyframes orbit-face {
+  from {
+    transform: rotateZ(0deg) rotateX(calc(-1 * var(--tilt))) rotateZ(calc(-1 * var(--turn)));
+  }
+  to {
+    transform: rotateZ(-360deg) rotateX(calc(-1 * var(--tilt))) rotateZ(calc(-1 * var(--turn)));
+  }
+}
+@keyframes globe-sway {
+  from {
+    transform: rotate(-7deg);
+  }
+  to {
+    transform: rotate(9deg);
+  }
+}
+@keyframes globe-bob {
+  to {
+    transform: translateY(-8px);
+  }
+}
+@keyframes globe-float {
+  to {
+    transform: translateY(-10px);
+  }
+}
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+}
+.rise {
+  animation: rise 0.7s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+@media (prefers-reduced-motion: reduce) {
+  .orbit-spin,
+  .orbit-face,
+  .globe-network,
+  .globe-sphere,
+  .globe-ball,
+  .rise {
+    animation: none;
+  }
+  .orbit-face {
+    transform: rotateX(calc(-1 * var(--tilt))) rotateZ(calc(-1 * var(--turn)));
+  }
+}
+
 /* Documents imprimables (convocations, émargement, attestations, PV). */
 @page {
   size: A4;
