@@ -106,7 +106,7 @@ export function Timeline({ view, days, today, rows, blocks }: { view: PlanningVi
             <div className="grid flex-1" style={{ gridTemplateColumns: gridTemplate }}>
               {days.map((d) => (
                 <div key={d} className={`col-span-2 border-r border-slate-200 px-2 py-1 text-center ${d === today ? "bg-brand-50 font-semibold text-brand-700" : "text-slate-600"}`}>
-                  <div className="capitalize">{formatDay(d)}</div>
+                  <div className="first-letter:uppercase">{formatDay(d)}</div>
                   <div className="flex justify-around text-[10px] text-slate-400"><span>matin</span><span>après-midi</span></div>
                 </div>
               ))}

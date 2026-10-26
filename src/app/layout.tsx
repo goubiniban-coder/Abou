@@ -8,6 +8,7 @@ export const metadata: Metadata = {
   title: { default: "Abou", template: "%s · Abou" },
   description: "Planning opérationnel pour organismes de formation",
   manifest: "/manifest.webmanifest",
+  icons: { icon: "/icon.svg" },
 };
 
 export const viewport: Viewport = { themeColor: "#1f57c3" };
