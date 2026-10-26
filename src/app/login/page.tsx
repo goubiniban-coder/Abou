@@ -17,7 +17,7 @@ async function login(form: FormData) {
 export default async function LoginPage({ searchParams }: PageProps<"/login">) {
   const { next, error } = await searchParams;
   return (
-    <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-gradient-to-br from-brand-700 via-brand-800 to-brand-900 p-4">
+    <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-gradient-to-br from-brand-400 via-brand-600 to-brand-800 p-4">
       <div className="absolute -top-24 -left-24 size-80 rounded-full bg-accent-400/20 blur-3xl" aria-hidden />
       <div className="absolute -right-20 -bottom-28 size-96 rounded-full bg-brand-500/30 blur-3xl" aria-hidden />
       <form action={login} className="card relative w-full max-w-sm space-y-5 p-7">

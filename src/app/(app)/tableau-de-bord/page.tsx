@@ -67,7 +67,7 @@ export default async function DashboardPage() {
   return (
     <div className="mx-auto max-w-6xl space-y-6">
       {/* Bandeau d'accueil */}
-      <section className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-brand-600 to-brand-800 p-6 text-white shadow-lg shadow-brand-900/20 md:p-8">
+      <section className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-brand-400 via-brand-500 to-brand-700 p-6 text-white shadow-lg shadow-brand-900/20 md:p-8">
         <div className="absolute -top-16 -right-10 size-56 rounded-full bg-accent-400/25 blur-2xl" aria-hidden />
         <div className="absolute -bottom-20 left-1/3 size-48 rounded-full bg-accent-300/15 blur-2xl" aria-hidden />
         <div className="relative flex flex-wrap items-center gap-6">
@@ -102,7 +102,7 @@ export default async function DashboardPage() {
         <section className="card min-w-0 p-5 lg:col-span-3">
           <div className="mb-1 flex items-center gap-2">
             <h2 className="text-lg font-bold">Missions</h2>
-            <span className="ml-auto rounded-full bg-brand-50 px-2.5 py-0.5 text-xs font-semibold text-brand-700">{done}/{missions.length} accomplies</span>
+            <span className="ml-auto rounded-full bg-mint-100 px-2.5 py-0.5 text-xs font-semibold text-brand-700">{done}/{missions.length} accomplies</span>
           </div>
           <div className="mb-4 h-2 overflow-hidden rounded-full bg-slate-100">
             <div className="h-full rounded-full bg-gradient-to-r from-brand-500 to-accent-400 transition-all" style={{ width: `${(done / missions.length) * 100}%` }} />
@@ -112,7 +112,7 @@ export default async function DashboardPage() {
               <li key={m.label}>
                 <Link
                   href={m.href}
-                  className={`group flex items-center gap-3 rounded-2xl border p-3 transition hover:-translate-y-0.5 hover:shadow-md ${m.count === 0 ? "border-brand-100 bg-brand-50/50" : "border-accent-200 bg-accent-100/40"}`}
+                  className={`group flex items-center gap-3 rounded-2xl border p-3 transition hover:-translate-y-0.5 hover:shadow-md ${m.count === 0 ? "border-mint-200 bg-mint-50" : "border-accent-200 bg-accent-100/40"}`}
                 >
                   <span className={`grid size-10 shrink-0 place-items-center rounded-xl ${m.count === 0 ? "bg-brand-500 text-white" : "bg-accent-400 text-brand-900"}`}>
                     <Icon name={m.count === 0 ? "check" : m.icon} />
@@ -134,7 +134,7 @@ export default async function DashboardPage() {
           <section className="card p-5">
             <h2 className="mb-3 text-lg font-bold">Aujourd&apos;hui</h2>
             {todaySlots.length === 0 ? (
-              <p className="rounded-2xl bg-slate-50 p-4 text-center text-sm text-slate-500">Journée calme ☀️ Aucun créneau prévu.</p>
+              <p className="rounded-2xl bg-mint-50 p-4 text-center text-sm text-slate-500">Journée calme ☀️ Aucun créneau prévu.</p>
             ) : (
               <ol className="relative space-y-3 border-l-2 border-dashed border-brand-200 pl-4">
                 {todaySlots.map(({ s, slot }) => {
@@ -168,7 +168,7 @@ export default async function DashboardPage() {
                 <Link key={d} href={`/planning?week=${monday}`} className="group flex flex-1 flex-col items-center gap-1">
                   <span className="text-xs font-bold text-slate-600">{n || ""}</span>
                   <span
-                    className={`w-full rounded-t-xl transition group-hover:opacity-80 ${d === today ? "bg-accent-400" : "bg-brand-500"}`}
+                    className={`w-full rounded-t-xl transition group-hover:opacity-80 ${d === today ? "bg-accent-400" : n >= busiest ? "bg-brand-500" : "bg-mint-400"}`}
                     style={{ height: `${Math.max(6, (n / busiest) * 80)}px` }}
                   />
                   <span className={`text-xs capitalize ${d === today ? "font-bold text-brand-800" : "text-slate-500"}`}>{formatDay(d, { weekday: "short" }).replace(".", "")}</span>
@@ -206,7 +206,7 @@ function ScoreRing({ score }: { score: number }) {
 function Stat({ label, value, icon, tone }: { label: string; value: number | string; icon: IconName; tone: "green" | "yellow" }) {
   return (
     <div className="card flex items-center gap-3 p-4 transition hover:-translate-y-0.5 hover:shadow-md">
-      <span className={`grid size-11 shrink-0 place-items-center rounded-2xl ${tone === "green" ? "bg-brand-100 text-brand-700" : "bg-accent-100 text-accent-500"}`}>
+      <span className={`grid size-11 shrink-0 place-items-center rounded-2xl ${tone === "green" ? "bg-mint-100 text-brand-600" : "bg-accent-100 text-accent-500"}`}>
         <Icon name={icon} />
       </span>
       <span className="min-w-0">

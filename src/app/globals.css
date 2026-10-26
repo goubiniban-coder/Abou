@@ -6,11 +6,18 @@
   --color-brand-50: #effbf2;
   --color-brand-100: #d7f5df;
   --color-brand-200: #aee9bf;
+  --color-brand-300: #7fd99a;
+  --color-brand-400: #4cc471;
   --color-brand-500: #1fa64a;
   --color-brand-600: #15873b;
   --color-brand-700: #136b32;
   --color-brand-800: #11552a;
   --color-brand-900: #0d3f20;
+  /* Vert tendre, pour les fonds et les touches claires */
+  --color-mint-50: #f1faec;
+  --color-mint-100: #e2f5d8;
+  --color-mint-200: #c8ecb5;
+  --color-mint-400: #8fd36b;
   /* Jaune d'accent */
   --color-accent-100: #fff6c2;
   --color-accent-200: #ffec85;
@@ -20,7 +27,7 @@
 }
 
 body {
-  @apply bg-[#f6f9f2] text-slate-900 antialiased;
+  @apply bg-mint-50 text-slate-900 antialiased;
 }
 
 @utility btn {
@@ -33,7 +40,7 @@ body {
   @apply btn bg-accent-400 text-brand-900 shadow-sm shadow-accent-500/30 hover:bg-accent-300;
 }
 @utility btn-secondary {
-  @apply btn border border-slate-200 bg-white text-slate-700 hover:border-brand-200 hover:bg-brand-50;
+  @apply btn border border-slate-200 bg-white text-slate-700 hover:border-brand-200 hover:bg-mint-100;
 }
 @utility btn-danger {
   @apply btn border border-red-200 bg-white text-red-700 hover:bg-red-50;

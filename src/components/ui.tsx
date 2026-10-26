@@ -30,10 +30,10 @@ export function Table({ head, children }: { head: string[]; children: ReactNode 
   return (
     <div className="card overflow-x-auto">
       <table className="w-full text-sm">
-        <thead className="bg-brand-50/60 text-left text-xs text-brand-800">
+        <thead className="bg-mint-100/70 text-left text-xs text-brand-800">
           <tr>{head.map((h) => <th key={h} className="px-3 py-2 font-medium">{h}</th>)}</tr>
         </thead>
-        <tbody className="[&>tr]:border-t [&>tr]:border-slate-100 [&>tr]:transition [&>tr:hover]:bg-brand-50/40 [&_td]:px-3 [&_td]:py-2.5">{children}</tbody>
+        <tbody className="[&>tr]:border-t [&>tr]:border-slate-100 [&>tr]:transition [&>tr:hover]:bg-mint-50 [&_td]:px-3 [&_td]:py-2.5">{children}</tbody>
       </table>
     </div>
   );
