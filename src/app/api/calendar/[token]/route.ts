@@ -13,7 +13,7 @@ export async function GET(_req: Request, { params }: RouteContext<"/api/calendar
   const sessions = ctx.sessions
     .filter((s) => s.assignments.some((a) => a.trainerId === trainer.id))
     .map((s) => ({ ...s, slots: trainerSlots(s, trainer.id) }));
-  const body = toICalendar(`${trainer.firstName} ${trainer.lastName} · Abou`, sessions, ctx);
+  const body = toICalendar(`${trainer.firstName} ${trainer.lastName} · Optitam`, sessions, ctx);
   return new Response(body, {
     headers: { "Content-Type": "text/calendar; charset=utf-8", "Content-Disposition": `inline; filename="planning-${trainer.id}.ics"` },
   });

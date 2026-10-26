@@ -1,6 +1,6 @@
 // Session d'administration signée (HMAC), utilisable dans le proxy comme côté serveur.
 
-export const AUTH_COOKIE = "abou_session";
+export const AUTH_COOKIE = "optitam_session";
 const MAX_AGE_S = 60 * 60 * 24 * 30;
 
 const encoder = new TextEncoder();

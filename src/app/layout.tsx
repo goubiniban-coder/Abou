@@ -5,7 +5,7 @@ import "./globals.css";
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: { default: "Abou", template: "%s · Abou" },
+  title: { default: "Optitam", template: "%s · Optitam" },
   description: "Planning opérationnel pour organismes de formation",
   manifest: "/manifest.webmanifest",
   icons: { icon: "/icon.svg" },

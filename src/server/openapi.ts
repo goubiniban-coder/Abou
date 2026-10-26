@@ -39,7 +39,7 @@ const force = { name: "force", in: "query", schema: { type: "boolean" }, descrip
 
 export const openapi = {
   openapi: "3.1.0",
-  info: { title: "API Abou", version: "1.0.0", description: "Planning opérationnel : sessions, ressources, conflits et recyclages. Authentification : en-tête `Authorization: Bearer <clé>`." },
+  info: { title: "API Optitam", version: "1.0.0", description: "Planning opérationnel : sessions, ressources, conflits et recyclages. Authentification : en-tête `Authorization: Bearer <clé>`." },
   servers: [{ url: "/api/v1" }],
   security: [{ bearer: [] }],
   components: {

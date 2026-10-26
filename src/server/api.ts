@@ -8,7 +8,7 @@ const hash = (key: string) => createHash("sha256").update(key).digest("hex");
 
 /** Crée une clé d'API. La clé en clair n'est renvoyée qu'ici : seule son empreinte est stockée. */
 export async function createApiKey(name: string) {
-  const key = `abou_${randomBytes(24).toString("base64url")}`;
+  const key = `optitam_${randomBytes(24).toString("base64url")}`;
   await db.insert(t.apiKeys).values({ name, hash: hash(key), prefix: key.slice(0, 10) });
   return key;
 }

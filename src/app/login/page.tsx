@@ -18,7 +18,7 @@ export default async function LoginPage({ searchParams }: PageProps<"/login">) {
   return (
     <div className="flex min-h-screen items-center justify-center p-4">
       <form action={login} className="card w-full max-w-sm space-y-4 p-6">
-        <h1 className="text-xl font-bold text-brand-700">Abou</h1>
+        <h1 className="text-xl font-bold text-brand-700">Optitam</h1>
         <input type="hidden" name="next" value={typeof next === "string" ? next : "/planning"} />
         <label className="block">
           <span className="label">Mot de passe</span>

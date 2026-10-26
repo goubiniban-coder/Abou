@@ -5,7 +5,7 @@ const stamp = (iso: string) => new Date(iso).toISOString().replace(/[-:]/g, "").
 
 /** Flux iCalendar d'une liste de sessions, à abonner depuis Google Agenda ou Outlook. */
 export function toICalendar(name: string, sessions: Session[], ctx: PlanningContext, now = new Date().toISOString()): string {
-  const lines = ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//Abou//Planning//FR", "CALSCALE:GREGORIAN", `X-WR-CALNAME:${escape(name)}`];
+  const lines = ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//Optitam//Planning//FR", "CALSCALE:GREGORIAN", `X-WR-CALNAME:${escape(name)}`];
   for (const session of sessions) {
     if (session.status === "cancelled") continue;
     const course: Course | undefined = ctx.courses.find((c) => c.id === session.courseId);
@@ -14,7 +14,7 @@ export function toICalendar(name: string, sessions: Session[], ctx: PlanningCont
     session.slots.forEach((slot, i) => {
       lines.push(
         "BEGIN:VEVENT",
-        `UID:${session.id}-${i}@abou`,
+        `UID:${session.id}-${i}@optitam`,
         `DTSTAMP:${stamp(now)}`,
         `DTSTART:${stamp(slot.start)}`,
         `DTEND:${stamp(slot.end)}`,

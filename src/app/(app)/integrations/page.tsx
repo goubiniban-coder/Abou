@@ -57,7 +57,7 @@ export default async function IntegrationsPage() {
             </tr>
           ))}
         </Table>
-        <pre className="overflow-x-auto rounded-md bg-slate-900 p-3 text-xs text-slate-100">{`curl -H "Authorization: Bearer abou_…" \\
+        <pre className="overflow-x-auto rounded-md bg-slate-900 p-3 text-xs text-slate-100">{`curl -H "Authorization: Bearer optitam_…" \\
   "https://votre-domaine/api/v1/sessions?from=2026-11-01&to=2026-11-30"`}</pre>
       </section>
     </div>

@@ -1,8 +1,8 @@
-# Abou
+# Optitam
 
 Logiciel de planning opérationnel pour organismes de formation : sessions, salles, formateurs, matériel et formations réglementées (CACES, habilitations, SST).
 
-Au-delà du planning classique, Abou vérifie le planning en continu et aide à le construire :
+Au-delà du planning classique, Optitam vérifie le planning en continu et aide à le construire :
 
 - **Détection des conflits en temps réel** : salle, formateur ou engin réservé deux fois ; ressource indisponible ; salle trop petite ; formateur sans la compétence ou avec une habilitation expirée ; testeur CACES au-delà de sa capacité journalière ; testeur ou matériel manquant.
 - **Suggestions d'affectation** : formateurs, salles et engins disponibles et compatibles, classés (site, interne ou externe, charge de la semaine, taille de salle).

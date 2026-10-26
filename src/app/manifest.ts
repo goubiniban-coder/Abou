@@ -2,8 +2,8 @@ import type { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "Abou · Planning de formation",
-    short_name: "Abou",
+    name: "Optitam · Planning de formation",
+    short_name: "Optitam",
     description: "Planning opérationnel pour organismes de formation",
     start_url: "/planning",
     display: "standalone",
