@@ -159,12 +159,13 @@ function makeBook(cover: number, rand: () => number) {
   return book;
 }
 
-export function mountGlobe(host: HTMLElement, onReady: () => void): () => void {
+/** Monte la scène ; renvoie null si le navigateur ne sait pas faire de WebGL. */
+export function mountGlobe(host: HTMLElement, onReady: () => void): (() => void) | null {
   let renderer: THREE.WebGLRenderer;
   try {
     renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: "high-performance" });
   } catch {
-    return () => {};
+    return null;
   }
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, window.innerWidth < 640 ? 1.5 : 2));
   renderer.outputColorSpace = THREE.SRGBColorSpace;
@@ -285,7 +286,8 @@ export function mountGlobe(host: HTMLElement, onReady: () => void): () => void {
   }
 
   // Billes de plâtre, de verre et une touche de jaune
-  const glass = new THREE.MeshPhysicalMaterial({ color: 0xffffff, transmission: 1, roughness: 0.04, thickness: 0.4, ior: 1.45, clearcoat: 1 });
+  // Verre simulé (transparence + vernis) : la vraie transmission coûte une passe de rendu en plus.
+  const glass = new THREE.MeshPhysicalMaterial({ color: 0xffffff, transparent: true, opacity: 0.35, roughness: 0.05, clearcoat: 1, depthWrite: false });
   const ballPlaster = new THREE.MeshPhysicalMaterial({ color: 0xf2f4f1, roughness: 0.75, sheen: 0.5, sheenColor: new THREE.Color(0xffffff) });
   const ballYellow = new THREE.MeshPhysicalMaterial({ color: YELLOW, roughness: 0.35, clearcoat: 0.6 });
   const balls: { mesh: THREE.Mesh; base: THREE.Vector3; phase: number; speed: number }[] = [];
