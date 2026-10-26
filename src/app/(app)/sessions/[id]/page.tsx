@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { loadReference } from "@/server/reference";
 import { statusLabel } from "@/lib/format";
 import { SessionForm } from "../session-form";
+import { AttendancePanel } from "./attendance-panel";
 
 export const metadata = { title: "Session" };
 
@@ -18,6 +19,7 @@ export default async function SessionPage({ params }: PageProps<"/sessions/[id]"
         <span className="rounded-full bg-slate-200 px-2 py-0.5 text-xs">{statusLabel[session.status]}</span>
       </div>
       <SessionForm reference={reference} initial={session} isNew={false} />
+      {course && <AttendancePanel session={session} course={course} />}
     </div>
   );
 }

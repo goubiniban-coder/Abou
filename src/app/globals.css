@@ -34,3 +34,9 @@ body {
 @utility card {
   @apply rounded-lg border border-slate-200 bg-white shadow-xs;
 }
+
+/* Documents imprimables (convocations, émargement, attestations, PV). */
+@page {
+  size: A4;
+  margin: 15mm;
+}
