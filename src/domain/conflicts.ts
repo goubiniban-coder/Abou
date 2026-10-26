@@ -1,4 +1,4 @@
-import { dayOf, isBefore, overlaps, span } from "./time";
+import { frenchDay, isBefore, overlaps, parisDay, span } from "./time";
 import type { Course, Id, PlanningContext, ResourceType, Session, Slot, Trainer } from "./types";
 
 export type ConflictCode =
@@ -48,7 +48,7 @@ export function testUnitsByDay(session: Session, course: Course | undefined): Ma
   const result = new Map<string, number>();
   const perTrainee = course?.testUnitsPerTrainee ?? 0;
   if (!perTrainee) return result;
-  const testDays = [...new Set(session.slots.filter((s) => s.kind === "test").map((s) => dayOf(s.start)))];
+  const testDays = [...new Set(session.slots.filter((s) => s.kind === "test").map((s) => parisDay(s.start)))];
   if (testDays.length === 0) return result;
   const total = perTrainee * session.traineeIds.length;
   for (const day of testDays) result.set(day, total / testDays.length);
@@ -107,10 +107,10 @@ export function detectConflicts(session: Session, ctx: PlanningContext): Conflic
         add({
           code: "room_double_booked",
           severity: "error",
-          message: `La salle ${room.name} est déjà réservée le ${dayOf(slot.start)}.`,
+          message: `La salle ${room.name} est déjà réservée le ${frenchDay(parisDay(slot.start))}.`,
           resource: { type: "room", id: room.id },
           otherSessionId: other.id,
-          day: dayOf(slot.start),
+          day: parisDay(slot.start),
         });
       }
     }
@@ -135,10 +135,10 @@ export function detectConflicts(session: Session, ctx: PlanningContext): Conflic
         add({
           code: "trainer_double_booked",
           severity: "error",
-          message: `${name} intervient déjà sur une autre session le ${dayOf(slot.start)}.`,
+          message: `${name} intervient déjà sur une autre session le ${frenchDay(parisDay(slot.start))}.`,
           resource: { type: "trainer", id: trainerId },
           otherSessionId: other.id,
-          day: dayOf(slot.start),
+          day: parisDay(slot.start),
         });
       }
     }
@@ -155,7 +155,7 @@ export function detectConflicts(session: Session, ctx: PlanningContext): Conflic
         add({
           code: "competence_expired",
           severity: "error",
-          message: `L'habilitation ${code} de ${name} expire le ${dayOf(competence.validUntil)}, avant la fin de la session.`,
+          message: `L'habilitation ${code} de ${name} expire le ${frenchDay(competence.validUntil)}, avant la fin de la session.`,
           resource: { type: "trainer", id: trainerId },
         });
       }
@@ -178,7 +178,7 @@ export function detectConflicts(session: Session, ctx: PlanningContext): Conflic
         add({
           code: "tester_over_capacity",
           severity: "error",
-          message: `${trainerName(trainer)} aurait ${round(load)} unités de test le ${day} pour une capacité de ${trainer.testUnitsPerDay}.`,
+          message: `${trainerName(trainer)} aurait ${round(load)} unités de test le ${frenchDay(day)} pour une capacité de ${trainer.testUnitsPerDay}.`,
           resource: { type: "trainer", id: trainerId },
           day,
         });
@@ -201,10 +201,10 @@ export function detectConflicts(session: Session, ctx: PlanningContext): Conflic
         add({
           code: "equipment_double_booked",
           severity: "error",
-          message: `${item.name} est déjà réservé le ${dayOf(slot.start)}.`,
+          message: `${item.name} est déjà réservé le ${frenchDay(parisDay(slot.start))}.`,
           resource: { type: "equipment", id: item.id },
           otherSessionId: other.id,
-          day: dayOf(slot.start),
+          day: parisDay(slot.start),
         });
       }
     }
@@ -227,9 +227,9 @@ export function detectConflicts(session: Session, ctx: PlanningContext): Conflic
         add({
           code: "resource_unavailable",
           severity: "error",
-          message: `${r.label} est indisponible le ${dayOf(slot.start)}${u.reason ? ` (${u.reason})` : ""}.`,
+          message: `${r.label} est indisponible le ${frenchDay(parisDay(slot.start))}${u.reason ? ` (${u.reason})` : ""}.`,
           resource: { type: r.type, id: r.id },
-          day: dayOf(slot.start),
+          day: parisDay(slot.start),
         });
       }
     }

@@ -44,3 +44,38 @@ export function span(intervals: Interval[]): Interval | undefined {
   }
   return { start, end };
 }
+
+export const TIME_ZONE = "Europe/Paris";
+
+/** Décalage horaire de Paris (« +01:00 » ou « +02:00 ») à une date donnée. */
+function parisOffset(date: string): string {
+  const name = new Intl.DateTimeFormat("en-US", { timeZone: TIME_ZONE, timeZoneName: "longOffset" })
+    .formatToParts(new Date(`${date}T12:00:00Z`))
+    .find((p) => p.type === "timeZoneName")?.value;
+  const offset = name?.replace("GMT", "") ?? "";
+  return offset === "" ? "+00:00" : offset;
+}
+
+/** Date ISO correspondant à une heure de Paris : parisTime("2026-11-03", "08:30"). */
+export function parisTime(date: string, time: string): string {
+  return new Date(`${date}T${time}:00${parisOffset(date)}`).toISOString();
+}
+
+/** Jour calendaire à Paris d'un instant ISO. */
+export function parisDay(iso: string): string {
+  return new Intl.DateTimeFormat("en-CA", { timeZone: TIME_ZONE }).format(new Date(iso));
+}
+
+/** Lundi de la semaine qui contient `date`. */
+export function mondayOf(date: string): string {
+  const d = new Date(`${dayOf(date)}T00:00:00Z`);
+  const shift = (d.getUTCDay() + 6) % 7;
+  return addDays(dayOf(date), -shift);
+}
+
+/** « 2026-11-03 » → « mardi 3 novembre 2026 ». */
+export function frenchDay(date: string): string {
+  return new Intl.DateTimeFormat("fr-FR", { timeZone: "UTC", weekday: "long", day: "numeric", month: "long", year: "numeric" }).format(
+    new Date(`${dayOf(date)}T12:00:00Z`),
+  );
+}

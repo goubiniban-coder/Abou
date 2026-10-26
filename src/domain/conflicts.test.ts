@@ -68,7 +68,7 @@ describe("detectConflicts", () => {
     const s = session({ id: "s1", courseId: "sst", slots: day("2026-11-20"), roomId: "salle-a", assignments: [{ role: "theory", trainerId: "marc" }] });
     const [c] = detectConflicts(s, ctx);
     expect(c.code).toBe("competence_expired");
-    expect(c.message).toContain("2026-11-15");
+    expect(c.message).toContain("dimanche 15 novembre 2026");
   });
 
   it("signale une indisponibilité de formateur", () => {

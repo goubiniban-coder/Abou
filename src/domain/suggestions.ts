@@ -1,5 +1,5 @@
 import { detectConflicts, hasBlockingConflict, type Conflict } from "./conflicts";
-import { addDays, dayOf, overlaps } from "./time";
+import { addDays, parisDay } from "./time";
 import type { AssignmentRole, Equipment, PlanningContext, Room, Session, Trainer } from "./types";
 
 export interface Suggestion<T> {
@@ -24,12 +24,13 @@ function newConflicts(before: Conflict[], after: Conflict[]): Conflict[] {
 function weeklyLoad(trainer: Trainer, session: Session, ctx: PlanningContext): number {
   const first = session.slots[0];
   if (!first) return 0;
-  const window = { start: `${addDays(first.start, -3)}T00:00:00`, end: `${addDays(first.start, 4)}T00:00:00` };
+  const from = addDays(parisDay(first.start), -3);
+  const to = addDays(parisDay(first.start), 3);
   let count = 0;
   for (const s of ctx.sessions) {
     if (s.id === session.id || s.status === "cancelled") continue;
     if (!s.assignments.some((a) => a.trainerId === trainer.id)) continue;
-    count += s.slots.filter((slot) => overlaps({ start: dayOf(slot.start), end: dayOf(slot.end) + "T23:59:59" }, window)).length;
+    count += s.slots.filter((slot) => parisDay(slot.start) >= from && parisDay(slot.start) <= to).length;
   }
   return count;
 }
