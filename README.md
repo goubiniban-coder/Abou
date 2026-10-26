@@ -1,36 +1,70 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Abou
 
-## Getting Started
+Logiciel de planning opérationnel pour organismes de formation : sessions, salles, formateurs, matériel et formations réglementées (CACES, habilitations, SST).
 
-First, run the development server:
+Au-delà du planning classique, Abou vérifie le planning en continu et aide à le construire :
+
+- **Détection des conflits en temps réel** : salle, formateur ou engin réservé deux fois ; ressource indisponible ; salle trop petite ; formateur sans la compétence ou avec une habilitation expirée ; testeur CACES au-delà de sa capacité journalière ; testeur ou matériel manquant.
+- **Suggestions d'affectation** : formateurs, salles et engins disponibles et compatibles, classés (site, interne ou externe, charge de la semaine, taille de salle).
+- **Espace formateur mobile** (application web installable) avec agenda, détail des stagiaires et saisie des indisponibilités.
+- **Synchronisation agenda** : flux iCal par formateur pour Google Agenda, Outlook ou le téléphone.
+- **API REST** documentée (OpenAPI) avec clés d'accès.
+
+## Fonctionnalités
+
+| Écran | Rôle |
+|---|---|
+| Planning | Frise par formateur, salle ou matériel ; semaine par semaine, par site ; glisser-déposer pour changer de jour ou de ressource ; conflits signalés en rouge |
+| Sessions | Liste et fiche de session : formation, dates par demi-journée (théorie, pratique, test), salle, formateurs par rôle, matériel, stagiaires ; vérification à la volée ; brouillon ou confirmée |
+| Recyclages | Certificats qui arrivent à échéance (30, 90, 180 jours) et création d'une session de recyclage en un clic |
+| Référentiels | Formateurs (compétences datées, capacité de test), salles, matériel, catalogue, stagiaires et certificats, indisponibilités |
+| Écran d'accueil | `/accueil` : formations du jour et leurs salles, pour l'écran à l'entrée du centre |
+| API et agendas | Clés d'API et liste des points d'accès |
+
+Une session **confirmée** ne peut pas être enregistrée avec un conflit bloquant sans confirmation explicite ; un **brouillon** peut l'être, pour être corrigé ensuite.
+
+## Stack
+
+- Next.js 16 (App Router) et TypeScript
+- PostgreSQL avec Drizzle ORM
+- Tailwind CSS 4
+- Vitest pour le moteur de règles (`src/domain`)
+
+Le moteur de règles (`src/domain`) est du TypeScript pur, sans dépendance à la base ni à l'interface : il est partagé par l'interface, l'API et les tests.
+
+## Démarrer en local
+
+Prérequis : Node.js 22 et PostgreSQL 16.
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
+cp .env.example .env          # puis renseigner DATABASE_URL
+npm run db:migrate            # crée les tables
+npm run db:seed               # données de démonstration (centre fictif)
+npm run dev                   # http://localhost:3000
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Sans `ADMIN_PASSWORD`, le back-office est ouvert : pratique en local, à ne pas faire en production.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+npm test          # tests du moteur de règles
+npm run typecheck
+npm run lint
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Mise en ligne
 
-## Learn More
+1. Créer une base PostgreSQL (par exemple chez Supabase) et récupérer son URL de connexion.
+2. Lancer `npm run db:migrate` avec cette `DATABASE_URL`.
+3. Déployer sur Vercel avec les variables `DATABASE_URL`, `ADMIN_PASSWORD` et `AUTH_SECRET` (chaîne aléatoire longue).
 
-To learn more about Next.js, take a look at the following resources:
+## Accès
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- **Back-office** : protégé par `ADMIN_PASSWORD`.
+- **Espace formateur** : `/formateur/<jeton>`, lien personnel affiché sur la fiche du formateur.
+- **Agenda iCal** : `/api/calendar/<jeton>.ics`.
+- **API** : `/api/v1/...` avec l'en-tête `Authorization: Bearer <clé>` ; description sur `/api/openapi`.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Pistes suivantes
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Comptes utilisateurs et rôles (planificateur, lecture seule, cloisonnement par agence) ; optimisation automatique d'un mois entier ; synchronisation agenda dans les deux sens ; webhooks ; convocations, émargement et attestations.

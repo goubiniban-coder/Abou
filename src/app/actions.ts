@@ -1,5 +1,6 @@
 "use server";
 
+import { requireAdmin } from "@/server/guard";
 import { revalidatePath } from "next/cache";
 import { detectConflicts, shiftParisDays, suggestEquipment, suggestRooms, suggestTrainers, type AssignmentRole, type Conflict, type Session } from "@/domain";
 import { BlockingConflictError, deleteSession, getSession, loadContext, saveSession } from "@/server/planning";
@@ -29,6 +30,7 @@ export async function moveSessionAction(input: {
   toResourceId: string | null;
   force?: boolean;
 }): Promise<ActionResult> {
+  await requireAdmin();
   const session = await getSession(input.sessionId);
   if (!session) return { ok: false, blocked: false, error: "Session introuvable." };
   const moved: Session = {
@@ -49,11 +51,13 @@ export async function moveSessionAction(input: {
 }
 
 export async function saveSessionAction(session: Session, force = false): Promise<ActionResult> {
+  await requireAdmin();
   return persist(session, force);
 }
 
 /** Vérification à la volée pendant la saisie d'une session, sans rien enregistrer. */
 export async function checkSessionAction(session: Session) {
+  await requireAdmin();
   const ctx = await loadContext();
   const conflicts = detectConflicts(session, ctx);
   const course = ctx.courses.find((c) => c.id === session.courseId);
@@ -71,6 +75,7 @@ export async function checkSessionAction(session: Session) {
 }
 
 export async function deleteSessionAction(id: string) {
+  await requireAdmin();
   await deleteSession(id);
   revalidatePath("/", "layout");
 }

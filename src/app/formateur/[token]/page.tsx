@@ -2,7 +2,7 @@ import { eq } from "drizzle-orm";
 import { headers } from "next/headers";
 import { notFound } from "next/navigation";
 import { db, schema as t } from "@/db";
-import { addUnavailability, deleteUnavailability } from "@/app/ref-actions";
+import { trainerAddUnavailability, trainerDeleteUnavailability } from "@/app/ref-actions";
 import { detectAllConflicts, parisDay, trainerSlots } from "@/domain";
 import { formatDay, formatTime, fullName, roleLabel, slotKindLabel } from "@/lib/format";
 import { loadContext } from "@/server/planning";
@@ -17,7 +17,6 @@ export default async function TrainerSpace({ params }: PageProps<"/formateur/[to
   const ctx = await loadContext();
   const today = parisDay(new Date().toISOString());
   const host = (await headers()).get("host") ?? "localhost:3000";
-  const back = `/formateur/${token}`;
 
   const mine = ctx.sessions.filter((s) => s.status !== "cancelled" && s.assignments.some((a) => a.trainerId === trainer.id));
   const items = mine
@@ -89,18 +88,13 @@ export default async function TrainerSpace({ params }: PageProps<"/formateur/[to
           {unavailable.map((u) => (
             <li key={u.id} className="flex items-center justify-between gap-2">
               <span>{formatDay(parisDay(u.start))} → {formatDay(parisDay(new Date(Date.parse(u.end) - 1).toISOString()))}{u.reason && ` · ${u.reason}`}</span>
-              <form action={deleteUnavailability}>
-                <input type="hidden" name="id" value={u.id} />
-                <input type="hidden" name="back" value={back} />
+              <form action={trainerDeleteUnavailability.bind(null, token, u.id)}>
                 <button className="text-xs text-slate-400">Retirer</button>
               </form>
             </li>
           ))}
         </ul>
-        <form action={addUnavailability} className="grid grid-cols-2 gap-2">
-          <input type="hidden" name="resourceType" value="trainer" />
-          <input type="hidden" name="resourceId" value={trainer.id} />
-          <input type="hidden" name="back" value={back} />
+        <form action={trainerAddUnavailability.bind(null, token)} className="grid grid-cols-2 gap-2">
           <label className="text-xs">Du<input type="date" name="from" required className="input" /></label>
           <label className="text-xs">Au<input type="date" name="to" className="input" /></label>
           <input name="reason" placeholder="Motif (facultatif)" className="input col-span-2" />

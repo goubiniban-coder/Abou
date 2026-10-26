@@ -1,6 +1,7 @@
 "use server";
 
-import { eq } from "drizzle-orm";
+import { requireAdmin } from "@/server/guard";
+import { and, eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { db, schema as t } from "@/db";
@@ -39,6 +40,7 @@ function done(path: string): never {
 }
 
 export async function saveTrainer(f: FormData) {
+  await requireAdmin();
   const id = newId(f);
   const values = {
     firstName: str(f, "firstName") ?? "",
@@ -54,6 +56,7 @@ export async function saveTrainer(f: FormData) {
 }
 
 export async function saveRoom(f: FormData) {
+  await requireAdmin();
   const id = newId(f);
   const values = { name: str(f, "name") ?? "", siteId: str(f, "siteId") ?? "", capacity: int(f, "capacity") ?? 0, equipment: list(f, "equipment") };
   await db.insert(t.rooms).values({ id, ...values }).onConflictDoUpdate({ target: t.rooms.id, set: values });
@@ -61,6 +64,7 @@ export async function saveRoom(f: FormData) {
 }
 
 export async function saveEquipment(f: FormData) {
+  await requireAdmin();
   const id = newId(f);
   const values = { name: str(f, "name") ?? "", kind: (str(f, "kind") ?? "").toUpperCase(), siteId: str(f, "siteId") };
   await db.insert(t.equipment).values({ id, ...values }).onConflictDoUpdate({ target: t.equipment.id, set: values });
@@ -68,6 +72,7 @@ export async function saveEquipment(f: FormData) {
 }
 
 export async function saveCourse(f: FormData) {
+  await requireAdmin();
   const id = newId(f);
   const values = {
     code: (str(f, "code") ?? "").toUpperCase(),
@@ -85,6 +90,7 @@ export async function saveCourse(f: FormData) {
 }
 
 export async function saveTrainee(f: FormData) {
+  await requireAdmin();
   const id = newId(f);
   const values = { firstName: str(f, "firstName") ?? "", lastName: str(f, "lastName") ?? "", email: str(f, "email"), clientId: str(f, "clientId") };
   await db.insert(t.trainees).values({ id, ...values }).onConflictDoUpdate({ target: t.trainees.id, set: values });
@@ -92,11 +98,13 @@ export async function saveTrainee(f: FormData) {
 }
 
 export async function saveClient(f: FormData) {
+  await requireAdmin();
   await db.insert(t.clients).values({ name: str(f, "name") ?? "", city: str(f, "city") });
   done("/stagiaires");
 }
 
 export async function addCertification(f: FormData) {
+  await requireAdmin();
   const traineeId = str(f, "traineeId")!;
   const courseId = str(f, "courseId")!;
   const obtainedOn = str(f, "obtainedOn")!;
@@ -108,12 +116,18 @@ export async function addCertification(f: FormData) {
 }
 
 export async function deleteCertification(f: FormData) {
+  await requireAdmin();
   await db.delete(t.certifications).where(eq(t.certifications.id, str(f, "id")!));
   done(str(f, "back") ?? "/stagiaires");
 }
 
 /** Indisponibilité du jour `from` au jour `to` inclus, ou sur une demi-journée. */
 export async function addUnavailability(f: FormData) {
+  await requireAdmin();
+  await insertUnavailability(f);
+}
+
+async function insertUnavailability(f: FormData) {
   const from = str(f, "from")!;
   const to = str(f, "to") ?? from;
   const period = str(f, "period") ?? "day";
@@ -132,11 +146,13 @@ export async function addUnavailability(f: FormData) {
 }
 
 export async function deleteUnavailability(f: FormData) {
+  await requireAdmin();
   await db.delete(t.unavailabilities).where(eq(t.unavailabilities.id, str(f, "id")!));
   done(str(f, "back")!);
 }
 
 export async function deleteEntity(f: FormData) {
+  await requireAdmin();
   const kind = str(f, "kind");
   const id = str(f, "id")!;
   const table = { trainer: t.trainers, room: t.rooms, equipment: t.equipment, course: t.courses, trainee: t.trainees }[kind ?? ""];
@@ -148,4 +164,25 @@ export async function deleteEntity(f: FormData) {
     redirect(`${str(f, "back")}?error=used`);
   }
   done(str(f, "list")!);
+}
+
+/** Depuis l'espace formateur : le jeton personnel tient lieu de connexion. */
+async function trainerFromToken(token: string) {
+  const [trainer] = await db.select().from(t.trainers).where(eq(t.trainers.calendarToken, token));
+  if (!trainer) throw new Error("Non autorisé");
+  return trainer;
+}
+
+export async function trainerAddUnavailability(token: string, f: FormData) {
+  const trainer = await trainerFromToken(token);
+  f.set("resourceType", "trainer");
+  f.set("resourceId", trainer.id);
+  f.set("back", `/formateur/${token}`);
+  await insertUnavailability(f);
+}
+
+export async function trainerDeleteUnavailability(token: string, id: string) {
+  const trainer = await trainerFromToken(token);
+  await db.delete(t.unavailabilities).where(and(eq(t.unavailabilities.id, id), eq(t.unavailabilities.resourceId, trainer.id)));
+  done(`/formateur/${token}`);
 }
