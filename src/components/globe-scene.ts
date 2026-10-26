@@ -40,7 +40,7 @@ function sphereTextures() {
   low.addColorStop(1, "#cdeec0");
   c.fillStyle = low;
   c.fillRect(0, bottom, W, H - bottom);
-  c.fillStyle = "#dfe4df";
+  c.fillStyle = "#cfd7d0";
   c.fillRect(0, top, W, bottom - top);
   // Relief : noir = creux, blanc = bosse
   b.fillStyle = "#808080";
@@ -81,23 +81,24 @@ function sphereTextures() {
     ctx.lineTo(x2, y2);
     ctx.stroke();
   };
-  for (const [ctx, style, width] of [
-    [c, "#ffffff", cw * 0.34],
-    [b, "#ffffff", cw * 0.34],
+  // Ombre portée des murs d'abord, puis les murs eux-mêmes.
+  for (const [ctx, style, width, dx, dy] of [
+    [c, "#a9b5ad", cw * 0.36, cw * 0.1, ch * 0.12],
+    [c, "#ffffff", cw * 0.34, 0, 0],
+    [b, "#ffffff", cw * 0.34, 0, 0],
   ] as const) {
     ctx.strokeStyle = style;
     ctx.lineWidth = width;
     ctx.lineCap = "square";
     for (let y = 0; y < rows; y++) {
       for (let x = 0; x < cols; x++) {
-        const px = x * cw;
-        const py = top + y * ch;
+        const px = x * cw + dx;
+        const py = top + y * ch + dy;
         if (!open.has([x, y, (x + 1) % cols, y].join())) wall(ctx, px + cw, py, px + cw, py + ch);
         if (y < rows - 1 && !open.has([x, y, x, y + 1].join())) wall(ctx, px, py + ch, px + cw, py + ch);
       }
     }
   }
-  // Ombre douce sous les murs pour la couleur.
   const map = new THREE.CanvasTexture(color);
   map.colorSpace = THREE.SRGBColorSpace;
   map.anisotropy = 8;
@@ -113,7 +114,7 @@ function dotsTexture() {
   const c = cv.getContext("2d")!;
   c.fillStyle = "#ffffff";
   c.fillRect(0, 0, s, s);
-  c.fillStyle = "#7f8d84";
+  c.fillStyle = "#5f7166";
   for (let y = 6; y < s; y += 12) for (let x = 6 + ((y / 12) % 2) * 6; x < s; x += 12) {
     c.beginPath();
     c.arc(x, y, 3.6, 0, Math.PI * 2);
@@ -158,17 +159,18 @@ function makeBook(cover: number, rand: () => number) {
   return book;
 }
 
-export function mountGlobe(host: HTMLElement, onReady: () => void): () => void {
+/** Monte la scène ; renvoie null si le navigateur ne sait pas faire de WebGL. */
+export function mountGlobe(host: HTMLElement, onReady: () => void): (() => void) | null {
   let renderer: THREE.WebGLRenderer;
   try {
     renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: "high-performance" });
   } catch {
-    return () => {};
+    return null;
   }
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, window.innerWidth < 640 ? 1.5 : 2));
   renderer.outputColorSpace = THREE.SRGBColorSpace;
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
-  renderer.toneMappingExposure = 1.05;
+  renderer.toneMappingExposure = 0.95;
   renderer.shadowMap.enabled = true;
   renderer.shadowMap.type = THREE.PCFShadowMap;
   renderer.domElement.style.width = "100%";
@@ -181,7 +183,7 @@ export function mountGlobe(host: HTMLElement, onReady: () => void): () => void {
   scene.environment = envMap;
 
   const camera = new THREE.PerspectiveCamera(32, 1, 0.1, 100);
-  camera.position.set(0, 1.1, 13.6);
+  camera.position.set(0, 1.1, 13.5);
   camera.lookAt(0, -0.15, 0);
 
   // Lumières : clé chaude en haut à gauche, contre-jour vert, lueur du bassin.
@@ -268,7 +270,7 @@ export function mountGlobe(host: HTMLElement, onReady: () => void): () => void {
   }
   const edges = new THREE.LineSegments(
     new THREE.EdgesGeometry(ico),
-    new THREE.LineBasicMaterial({ color: 0xe3ede5, transparent: true, opacity: 0.75 }),
+    new THREE.LineBasicMaterial({ color: 0x9fd4ae, transparent: true, opacity: 0.9 }),
   );
   network.add(edges);
   const nodeGeo = new THREE.SphereGeometry(0.03, 12, 8);
@@ -284,23 +286,24 @@ export function mountGlobe(host: HTMLElement, onReady: () => void): () => void {
   }
 
   // Billes de plâtre, de verre et une touche de jaune
-  const glass = new THREE.MeshPhysicalMaterial({ color: 0xffffff, transmission: 1, roughness: 0.04, thickness: 0.4, ior: 1.45, clearcoat: 1 });
+  // Verre simulé (transparence + vernis) : la vraie transmission coûte une passe de rendu en plus.
+  const glass = new THREE.MeshPhysicalMaterial({ color: 0xffffff, transparent: true, opacity: 0.35, roughness: 0.05, clearcoat: 1, depthWrite: false });
   const ballPlaster = new THREE.MeshPhysicalMaterial({ color: 0xf2f4f1, roughness: 0.75, sheen: 0.5, sheenColor: new THREE.Color(0xffffff) });
   const ballYellow = new THREE.MeshPhysicalMaterial({ color: YELLOW, roughness: 0.35, clearcoat: 0.6 });
   const balls: { mesh: THREE.Mesh; base: THREE.Vector3; phase: number; speed: number }[] = [];
   const spots: [number, number, number, number, THREE.Material][] = [
     [2.35, 1.95, 0.6, 0.2, ballPlaster],
-    [2.85, 1.65, 0.2, 0.26, ballPlaster],
+    [2.56, 1.65, 0.2, 0.26, ballPlaster],
     [2.45, 1.2, 1.2, 0.12, ballPlaster],
-    [2.9, 0.95, -0.3, 0.12, glass],
-    [2.55, -0.25, 0.9, 0.24, ballPlaster],
-    [2.8, -0.85, 0.3, 0.28, ballPlaster],
+    [2.61, 0.95, -0.3, 0.12, glass],
+    [2.29, -0.25, 0.9, 0.24, ballPlaster],
+    [2.52, -0.85, 0.3, 0.28, ballPlaster],
     [0.95, -0.35, 1.9, 0.2, ballYellow],
-    [-2.55, -0.85, 0.7, 0.2, ballPlaster],
-    [-2.85, 0.5, -0.2, 0.14, glass],
+    [-2.29, -0.85, 0.7, 0.2, ballPlaster],
+    [-2.56, 0.5, -0.2, 0.14, glass],
     [-1.9, -1.55, 1.0, 0.16, glass],
-    [-2.6, 1.6, 0.4, 0.1, ballYellow],
-    [2.55, -1.75, 0.7, 0.32, ballPlaster],
+    [-2.34, 1.6, 0.4, 0.1, ballYellow],
+    [2.29, -1.75, 0.7, 0.32, ballPlaster],
     [-2.45, -2.0, 0.5, 0.18, ballPlaster],
   ];
   const ballGeo = new THREE.SphereGeometry(1, 48, 32);
@@ -327,7 +330,8 @@ export function mountGlobe(host: HTMLElement, onReady: () => void): () => void {
   pedestal.add(rimRing);
   const dots = dotsTexture();
   dots.wrapS = dots.wrapT = THREE.RepeatWrapping;
-  dots.repeat.set(3, 3);
+  dots.repeat.set(2, 2);
+  dots.anisotropy = 8;
   const grill = new THREE.Mesh(new THREE.RingGeometry(1.05, 1.66, 96), new THREE.MeshStandardMaterial({ map: dots, roughness: 0.8 }));
   grill.rotation.x = -Math.PI / 2;
   grill.position.y = 0.192;
@@ -335,7 +339,7 @@ export function mountGlobe(host: HTMLElement, onReady: () => void): () => void {
   pedestal.add(grill);
   const basin = new THREE.Mesh(
     new THREE.CircleGeometry(1.05, 96),
-    new THREE.MeshStandardMaterial({ color: MINT, emissive: 0x8fd36b, emissiveIntensity: 1.6, roughness: 0.2 }),
+    new THREE.MeshStandardMaterial({ color: 0x8fd36b, emissive: GREEN_LIGHT, emissiveIntensity: 1.3, roughness: 0.2 }),
   );
   basin.rotation.x = -Math.PI / 2;
   basin.position.y = 0.19;
@@ -364,7 +368,7 @@ export function mountGlobe(host: HTMLElement, onReady: () => void): () => void {
 
   // Livres en orbite sur deux anneaux inclinés, avec leur trajectoire en pointillés.
   const orbitDefs = [
-    { radius: 2.75, tilt: new THREE.Euler(1.2, 0, -0.35), speed: 0.32, colors: [YELLOW, GREEN, 0xffffff, GREEN_LIGHT] },
+    { radius: 2.6, tilt: new THREE.Euler(1.2, 0, -0.35), speed: 0.32, colors: [YELLOW, GREEN, 0xffffff, GREEN_LIGHT] },
     { radius: 2.2, tilt: new THREE.Euler(1.0, 0, 0.5), speed: -0.45, colors: [0xffe047, 0x136b32, MINT] },
   ];
   const books: { book: THREE.Group; orbit: THREE.Group; radius: number; angle: number; speed: number; spin: number }[] = [];
@@ -382,7 +386,7 @@ export function mountGlobe(host: HTMLElement, onReady: () => void): () => void {
     orbit.add(trail);
     o.colors.forEach((color, i) => {
       const book = makeBook(color, rand);
-      book.scale.setScalar(1);
+      book.scale.setScalar(1.2);
       orbit.add(book);
       books.push({ book, orbit, radius: o.radius, angle: (i / o.colors.length) * Math.PI * 2, speed: o.speed, spin: 0.4 + rand() * 0.6 });
     });
@@ -409,6 +413,32 @@ export function mountGlobe(host: HTMLElement, onReady: () => void): () => void {
   };
   window.addEventListener("pointermove", onMove);
 
+  // Le globe se fait tourner à la main, avec un peu d'élan au lâcher.
+  let spin = 0;
+  let spinVel = 0;
+  let dragX: number | null = null;
+  host.style.cursor = "grab";
+  host.style.touchAction = "pan-y";
+  const onDown = (e: PointerEvent) => {
+    dragX = e.clientX;
+    host.setPointerCapture(e.pointerId);
+    host.style.cursor = "grabbing";
+  };
+  const onDrag = (e: PointerEvent) => {
+    if (dragX === null) return;
+    spinVel = (e.clientX - dragX) * 0.008;
+    spin += spinVel;
+    dragX = e.clientX;
+  };
+  const onUp = () => {
+    dragX = null;
+    host.style.cursor = "grab";
+  };
+  host.addEventListener("pointerdown", onDown);
+  host.addEventListener("pointermove", onDrag);
+  host.addEventListener("pointerup", onUp);
+  host.addEventListener("pointercancel", onUp);
+
   const still = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   let visible = true;
   const io = new IntersectionObserver(([entry]) => (visible = entry.isIntersecting));
@@ -422,18 +452,26 @@ export function mountGlobe(host: HTMLElement, onReady: () => void): () => void {
     frame = requestAnimationFrame(tick);
     if (!visible && !first) return;
     const t = still ? 2 : (performance.now() - start) / 1000;
-    sphere.rotation.y = t * 0.25;
+    // Entrée : la scène grandit et les livres s'écartent jusqu'à leur orbite.
+    const e = 1 - Math.pow(1 - Math.min(t / 1.4, 1), 3);
+    world.scale.setScalar(0.82 + 0.18 * e);
+    if (dragX === null) {
+      spin += spinVel;
+      spinVel *= 0.95;
+    }
+    sphere.rotation.y = t * 0.25 + spin;
     globe.position.y = 0.35 + Math.sin(t * 0.9) * 0.06;
-    network.rotation.y = -t * 0.08;
+    network.rotation.y = -t * 0.08 + spin * 0.4;
     network.rotation.z = Math.sin(t * 0.3) * 0.08;
     for (const b of balls) b.mesh.position.y = b.base.y + Math.sin(t * b.speed + b.phase) * 0.12;
     for (const b of books) {
       const a = b.angle + t * b.speed;
-      b.book.position.set(Math.cos(a) * b.radius, Math.sin(a) * b.radius, 0);
-      // Le livre reste à peu près face à la caméra en tournant doucement sur lui-même.
+      const r = b.radius * (0.55 + 0.45 * e);
+      b.book.position.set(Math.cos(a) * r, Math.sin(a) * r, 0);
       b.orbit.getWorldQuaternion(q).invert();
       b.book.quaternion.copy(q);
-      b.book.rotateY(Math.sin(t * b.spin + b.angle) * 0.6);
+      // Rotation complète : on voit tour à tour la couverture et les pages.
+      b.book.rotateY(t * b.spin + b.angle);
       b.book.rotateZ(Math.sin(t * 0.7 + b.angle) * 0.25);
     }
     halo.material.opacity = 0.45 + Math.sin(t * 1.4) * 0.12;
@@ -453,6 +491,10 @@ export function mountGlobe(host: HTMLElement, onReady: () => void): () => void {
     ro.disconnect();
     io.disconnect();
     window.removeEventListener("pointermove", onMove);
+    host.removeEventListener("pointerdown", onDown);
+    host.removeEventListener("pointermove", onDrag);
+    host.removeEventListener("pointerup", onUp);
+    host.removeEventListener("pointercancel", onUp);
     scene.traverse((o) => {
       if (o instanceof THREE.Mesh || o instanceof THREE.LineSegments || o instanceof THREE.LineLoop || o instanceof THREE.Sprite) {
         o.geometry?.dispose();
