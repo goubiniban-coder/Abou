@@ -5,10 +5,10 @@ export default function manifest(): MetadataRoute.Manifest {
     name: "Optitam · Planning de formation",
     short_name: "Optitam",
     description: "Planning opérationnel pour organismes de formation",
-    start_url: "/planning",
+    start_url: "/tableau-de-bord",
     display: "standalone",
-    background_color: "#f8fafc",
-    theme_color: "#1f57c3",
+    background_color: "#f6f9f2",
+    theme_color: "#15873b",
     lang: "fr",
     icons: [{ src: "/icon.svg", sizes: "any", type: "image/svg+xml" }],
   };

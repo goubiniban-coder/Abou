@@ -2,37 +2,50 @@
 
 @theme {
   --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-  --color-brand-50: #eef6ff;
-  --color-brand-100: #d9eaff;
-  --color-brand-500: #2f6fde;
-  --color-brand-600: #1f57c3;
-  --color-brand-700: #1b469c;
+  /* Vert Optitam */
+  --color-brand-50: #effbf2;
+  --color-brand-100: #d7f5df;
+  --color-brand-200: #aee9bf;
+  --color-brand-500: #1fa64a;
+  --color-brand-600: #15873b;
+  --color-brand-700: #136b32;
+  --color-brand-800: #11552a;
+  --color-brand-900: #0d3f20;
+  /* Jaune d'accent */
+  --color-accent-100: #fff6c2;
+  --color-accent-200: #ffec85;
+  --color-accent-300: #ffe047;
+  --color-accent-400: #fcd116;
+  --color-accent-500: #e2b500;
 }
 
 body {
-  @apply bg-slate-50 text-slate-900 antialiased;
+  @apply bg-[#f6f9f2] text-slate-900 antialiased;
 }
 
 @utility btn {
-  @apply inline-flex items-center justify-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium transition disabled:opacity-50;
+  @apply inline-flex items-center justify-center gap-1.5 rounded-xl px-3.5 py-2 text-sm font-semibold transition active:scale-[.97] disabled:opacity-50;
 }
 @utility btn-primary {
-  @apply btn bg-brand-600 text-white hover:bg-brand-700;
+  @apply btn bg-brand-600 text-white shadow-sm shadow-brand-600/30 hover:bg-brand-700;
+}
+@utility btn-accent {
+  @apply btn bg-accent-400 text-brand-900 shadow-sm shadow-accent-500/30 hover:bg-accent-300;
 }
 @utility btn-secondary {
-  @apply btn border border-slate-300 bg-white text-slate-700 hover:bg-slate-100;
+  @apply btn border border-slate-200 bg-white text-slate-700 hover:border-brand-200 hover:bg-brand-50;
 }
 @utility btn-danger {
-  @apply btn border border-red-300 bg-white text-red-700 hover:bg-red-50;
+  @apply btn border border-red-200 bg-white text-red-700 hover:bg-red-50;
 }
 @utility input {
-  @apply w-full rounded-md border border-slate-300 bg-white px-2.5 py-1.5 text-sm shadow-xs focus:border-brand-500 focus:ring-2 focus:ring-brand-100 focus:outline-none;
+  @apply w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm shadow-xs focus:border-brand-500 focus:ring-4 focus:ring-brand-100 focus:outline-none;
 }
 @utility label {
-  @apply mb-1 block text-xs font-medium text-slate-600;
+  @apply mb-1 block text-xs font-semibold text-slate-600;
 }
 @utility card {
-  @apply rounded-lg border border-slate-200 bg-white shadow-xs;
+  @apply rounded-2xl border border-slate-200/70 bg-white shadow-sm shadow-slate-900/5;
 }
 
 /* Documents imprimables (convocations, émargement, attestations, PV). */

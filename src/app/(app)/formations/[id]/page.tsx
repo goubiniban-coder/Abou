@@ -27,7 +27,7 @@ export default async function CoursePage({ params, searchParams }: PageProps<"/f
         <Field label="Unités de test par stagiaire" hint="CACES : sert au calcul de la charge des testeurs"><input type="number" min={0} name="testUnitsPerTrainee" defaultValue={c?.testUnitsPerTrainee ?? ""} className="input" /></Field>
         <Field label="Validité du certificat (mois)" hint="Sert au calcul des recyclages"><input type="number" min={0} name="validityMonths" defaultValue={c?.validityMonths ?? ""} className="input" /></Field>
         <Field label="Prix par stagiaire (€ HT)" hint="Repris sur les devis de recyclage"><input type="number" min={0} name="pricePerTrainee" defaultValue={c?.pricePerTrainee ?? ""} className="input" /></Field>
-        <Field label="Couleur sur le planning"><input type="color" name="color" defaultValue={c?.color ?? "#2f6fde"} className="h-9 w-16 rounded border border-slate-300" /></Field>
+        <Field label="Couleur sur le planning"><input type="color" name="color" defaultValue={c?.color ?? "#15873b"} className="h-9 w-16 rounded border border-slate-300" /></Field>
         <div className="flex gap-2 sm:col-span-2">
           <button className="btn-primary">Enregistrer</button>
           <Link href="/formations" className="btn-secondary">Retour</Link>
