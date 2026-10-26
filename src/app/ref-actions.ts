@@ -84,6 +84,7 @@ export async function saveCourse(f: FormData) {
     testUnitsPerTrainee: int(f, "testUnitsPerTrainee"),
     validityMonths: int(f, "validityMonths"),
     color: str(f, "color"),
+    pricePerTrainee: int(f, "pricePerTrainee"),
   };
   await db.insert(t.courses).values({ id, ...values }).onConflictDoUpdate({ target: t.courses.id, set: values });
   done("/formations");

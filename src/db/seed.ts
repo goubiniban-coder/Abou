@@ -25,7 +25,7 @@ const firstNames = ["Camille", "Lucas", "Manon", "Hugo", "Inès", "Louis", "Chlo
 const lastNames = ["Lefèvre", "Moreau", "Girard", "Roux", "Fournier", "Bonnet", "Lambert", "Fontaine", "Rousseau", "Vincent", "Muller", "Faure", "André", "Mercier", "Blanc", "Guérin"];
 
 async function main() {
-  await db.execute(sql`TRUNCATE sites, rooms, trainers, equipment, courses, clients, trainees, sessions, slots, assignments, session_equipment, enrollments, unavailabilities, certifications, api_keys, attendance, trainer_signatures, test_results, organization CASCADE`);
+  await db.execute(sql`TRUNCATE sites, rooms, trainers, equipment, courses, clients, trainees, sessions, slots, assignments, session_equipment, enrollments, unavailabilities, certifications, api_keys, attendance, trainer_signatures, test_results, organization, proposals CASCADE`);
 
   await db.insert(t.organization).values({
     id: "main",
@@ -65,10 +65,10 @@ async function main() {
     { id: "pemp-2", name: "Nacelle PEMP 3B (Bayonne)", kind: "R486-B", siteId: "bayonne" },
   ]);
   await db.insert(t.courses).values([
-    { id: "r489", code: "R489", title: "CACES chariots élévateurs cat. 3", durationHalfDays: 6, maxTrainees: 6, requiredCompetences: ["R489"], requiredEquipmentKinds: ["R489-3"], testUnitsPerTrainee: 2, validityMonths: 60, color: "#d97706" },
-    { id: "r486", code: "R486", title: "CACES nacelles PEMP cat. B", durationHalfDays: 4, maxTrainees: 6, requiredCompetences: ["R486"], requiredEquipmentKinds: ["R486-B"], testUnitsPerTrainee: 2, validityMonths: 60, color: "#7c3aed" },
-    { id: "sst", code: "SST", title: "Sauveteur secouriste du travail", durationHalfDays: 4, maxTrainees: 10, requiredCompetences: ["SST"], validityMonths: 24, color: "#dc2626" },
-    { id: "habelec", code: "HABELEC", title: "Habilitation électrique B1V-BR", durationHalfDays: 6, maxTrainees: 8, requiredCompetences: ["HABELEC"], validityMonths: 36, color: "#2563eb" },
+    { id: "r489", code: "R489", title: "CACES chariots élévateurs cat. 3", durationHalfDays: 6, maxTrainees: 6, requiredCompetences: ["R489"], requiredEquipmentKinds: ["R489-3"], testUnitsPerTrainee: 2, validityMonths: 60, color: "#d97706", pricePerTrainee: 690 },
+    { id: "r486", code: "R486", title: "CACES nacelles PEMP cat. B", durationHalfDays: 4, maxTrainees: 6, requiredCompetences: ["R486"], requiredEquipmentKinds: ["R486-B"], testUnitsPerTrainee: 2, validityMonths: 60, color: "#7c3aed", pricePerTrainee: 590 },
+    { id: "sst", code: "SST", title: "Sauveteur secouriste du travail", durationHalfDays: 4, maxTrainees: 10, requiredCompetences: ["SST"], validityMonths: 24, color: "#dc2626", pricePerTrainee: 280 },
+    { id: "habelec", code: "HABELEC", title: "Habilitation électrique B1V-BR", durationHalfDays: 6, maxTrainees: 8, requiredCompetences: ["HABELEC"], validityMonths: 36, color: "#2563eb", pricePerTrainee: 450 },
   ]);
   await db.insert(t.clients).values([
     { id: "logisud", name: "Logisud Entrepôts", city: "Lescar" },

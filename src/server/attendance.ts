@@ -52,5 +52,5 @@ export type Organization = typeof t.organization.$inferSelect;
 
 export async function loadOrganization(): Promise<Organization> {
   const [org] = await db.select().from(t.organization).where(eq(t.organization.id, "main"));
-  return org ?? { id: "main", name: "Organisme de formation", address: null, siret: null, nda: null, phone: null, email: null, signatory: null };
+  return org ?? { id: "main", name: "Organisme de formation", address: null, siret: null, nda: null, phone: null, email: null, signatory: null, vatRate: 20 };
 }

@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState, useTransition } from "react";
 import { checkSessionAction, deleteSessionAction, saveSessionAction } from "@/app/actions";
-import type { AssignmentRole, Conflict, Course, Session, SlotKind } from "@/domain";
+import { defaultSlots, type AssignmentRole, type Conflict, type Course, type Session, type Slot, type SlotKind } from "@/domain";
 import { addDays, parisClock, parisDay, parisTime } from "@/domain/time";
 import { formatDay, fullName, roleLabel, slotKindLabel } from "@/lib/format";
 import type { Reference } from "@/server/reference";
@@ -22,9 +22,9 @@ interface DayRow {
 const MORNING = ["08:30", "12:00"] as const;
 const AFTERNOON = ["13:30", "17:00"] as const;
 
-function rowsFromSlots(session: Session): DayRow[] {
+function rowsFromSlots(slots: Slot[]): DayRow[] {
   const byDay = new Map<string, DayRow>();
-  for (const s of session.slots) {
+  for (const s of slots) {
     const date = parisDay(s.start);
     const row = byDay.get(date) ?? { date, morning: false, afternoon: false, kind: s.kind };
     if (parisClock(s.start) < "12:00") row.morning = true;
@@ -44,28 +44,15 @@ function slotsFromRows(rows: DayRow[]) {
 
 /** Jours ouvrés successifs à partir de `start`, selon la durée de la formation. */
 function defaultRows(course: Course | undefined, start: string): DayRow[] {
-  const halfDays = course?.durationHalfDays ?? 2;
-  const dayCount = Math.ceil(halfDays / 2);
-  const rows: DayRow[] = [];
-  let date = start;
-  while (rows.length < dayCount) {
-    const wd = new Date(`${date}T12:00:00Z`).getUTCDay();
-    if (wd !== 0 && wd !== 6) {
-      const i = rows.length;
-      const last = i === dayCount - 1;
-      const kind: SlotKind = last && course?.testUnitsPerTrainee ? "test" : i < dayCount / 2 ? "theory" : "practice";
-      rows.push({ date, morning: true, afternoon: !(last && halfDays % 2 === 1), kind });
-    }
-    date = addDays(date, 1);
-  }
-  return rows;
+  const fallback: Course = { id: "", code: "", title: "", durationHalfDays: 2, maxTrainees: 0, requiredCompetences: [] };
+  return rowsFromSlots(defaultSlots(course ?? fallback, start));
 }
 
 export function SessionForm({ reference, initial, isNew, startDate }: { reference: Reference; initial: Session; isNew: boolean; startDate?: string }) {
   const router = useRouter();
   const { ctx, trainees, clients } = reference;
   const [session, setSession] = useState<Session>(initial);
-  const [rows, setRows] = useState<DayRow[]>(() => (initial.slots.length ? rowsFromSlots(initial) : defaultRows(ctx.courses.find((c) => c.id === initial.courseId), startDate ?? new Date().toISOString().slice(0, 10))));
+  const [rows, setRows] = useState<DayRow[]>(() => (initial.slots.length ? rowsFromSlots(initial.slots) : defaultRows(ctx.courses.find((c) => c.id === initial.courseId), startDate ?? new Date().toISOString().slice(0, 10))));
   const [check, setCheck] = useState<Check | null>(null);
   const [traineeFilter, setTraineeFilter] = useState("");
   const [saving, startSaving] = useTransition();

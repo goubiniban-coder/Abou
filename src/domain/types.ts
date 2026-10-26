@@ -65,6 +65,8 @@ export interface Course {
   /** Durée de validité du certificat obtenu, en mois. */
   validityMonths?: number;
   color?: string;
+  /** Prix par stagiaire hors taxes, en euros. */
+  pricePerTrainee?: number;
 }
 
 export type SlotKind = "theory" | "practice" | "test";

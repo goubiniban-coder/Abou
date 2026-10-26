@@ -17,7 +17,7 @@ Au-delà du planning classique, Optitam vérifie le planning en continu et aide 
 |---|---|
 | Planning | Frise par formateur, salle ou matériel ; semaine par semaine, par site ; glisser-déposer pour changer de jour ou de ressource ; conflits signalés en rouge |
 | Sessions | Liste et fiche de session : formation, dates par demi-journée (théorie, pratique, test), salle, formateurs par rôle, matériel, stagiaires ; vérification à la volée ; brouillon ou confirmée |
-| Recyclages | Certificats qui arrivent à échéance (30, 90, 180 jours) et création d'une session de recyclage en un clic |
+| Recyclages | Certificats qui arrivent à échéance (30, 90, 180 jours). Par client et par formation, Optitam propose trois dates tenables avant l'échéance (formateur, salle, testeur et engins libres) et prépare un lien pour le client : il choisit sa date en un clic, la session est créée en brouillon avec ses ressources et le devis est édité |
 | Référentiels | Formateurs (compétences datées, capacité de test), salles, matériel, catalogue, stagiaires et certificats, indisponibilités |
 | Émargement et documents | Sur la fiche de session : état de l'émargement par créneau, résultats, création des certificats en un clic, documents prêts à imprimer ou à enregistrer en PDF |
 | Paramètres | Identité de l'organisme (SIRET, déclaration d'activité, signataire) reprise sur les documents |
@@ -65,10 +65,11 @@ npm run lint
 
 - **Back-office** : protégé par `ADMIN_PASSWORD`.
 - **Espace formateur** : `/formateur/<jeton>`, lien personnel affiché sur la fiche du formateur. L'émargement d'un créneau ouvre un quart d'heure avant son début ; la saisie des résultats, au premier créneau de test.
+- **Propositions client** : `/proposition/<jeton>` et son devis `/proposition/<jeton>/devis`, sans connexion ; le lien expire au bout de 14 jours.
 - **Documents** : `/documents/<session>/<convocation|emargement|attestation|pv>`, réservés au back-office.
 - **Agenda iCal** : `/api/calendar/<jeton>.ics`.
 - **API** : `/api/v1/...` avec l'en-tête `Authorization: Bearer <clé>` ; description sur `/api/openapi`.
 
 ## Pistes suivantes
 
-Comptes utilisateurs et rôles (planificateur, lecture seule, cloisonnement par agence) ; optimisation automatique d'un mois entier ; synchronisation agenda dans les deux sens ; webhooks ; relance automatique des recyclages avec dates proposées ; financements et facturation.
+Comptes utilisateurs et rôles (planificateur, lecture seule, cloisonnement par agence) ; optimisation automatique d'un mois entier ; synchronisation agenda dans les deux sens ; webhooks ; envoi automatique des propositions par e-mail ; financements et facturation.

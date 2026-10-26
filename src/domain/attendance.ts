@@ -52,7 +52,7 @@ export const signingOpen = (slotStart: string, now: Date) => Date.parse(slotStar
 
 const hours = (slot: Slot) => (Date.parse(slot.end) - Date.parse(slot.start)) / 3_600_000;
 
-export function plannedHours(session: Session): number {
+export function plannedHours(session: Pick<Session, "slots">): number {
   return session.slots.reduce((sum, s) => sum + hours(s), 0);
 }
 
