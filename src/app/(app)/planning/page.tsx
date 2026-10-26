@@ -74,7 +74,10 @@ export default async function PlanningPage({ searchParams }: PageProps<"/plannin
   const weekConflicts = allConflicts.filter((c) => inWeek.some((s) => s.id === c.sessionId));
   const qs = (patch: Record<string, string | undefined>) => {
     const p = new URLSearchParams({ view, week: monday, ...(site ? { site } : {}), ...(dayCount === 7 ? { weekend: "1" } : {}) });
-    for (const [k, v] of Object.entries(patch)) (v === undefined ? p.delete(k) : p.set(k, v));
+    for (const [k, v] of Object.entries(patch)) {
+      if (v === undefined) p.delete(k);
+      else p.set(k, v);
+    }
     return `/planning?${p}`;
   };
 

@@ -1,4 +1,4 @@
-import { TIME_ZONE } from "@/domain";
+import { daysBetween, TIME_ZONE } from "@/domain";
 
 const fmt = (opts: Intl.DateTimeFormatOptions) => new Intl.DateTimeFormat("fr-FR", { timeZone: TIME_ZONE, ...opts });
 
@@ -14,3 +14,11 @@ export const fullName = (p: { firstName: string; lastName: string }) => `${p.fir
 export const roleLabel = { theory: "Théorie", practice: "Pratique", tester: "Testeur" } as const;
 export const slotKindLabel = { theory: "Théorie", practice: "Pratique", test: "Test" } as const;
 export const statusLabel = { draft: "Brouillon", confirmed: "Confirmée", cancelled: "Annulée" } as const;
+
+/** Couleur d'une habilitation selon sa fin de validité : expirée, bientôt, valable. */
+export function competenceTone(validUntil: string | undefined, today: string) {
+  if (!validUntil) return "slate" as const;
+  const left = daysBetween(today, validUntil);
+  return left < 0 ? ("red" as const) : left <= 60 ? ("amber" as const) : ("green" as const);
+}
+
