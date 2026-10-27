@@ -167,6 +167,15 @@ export async function deleteEntity(f: FormData) {
   done(str(f, "list")!);
 }
 
+/** Nouveau lien personnel : l'ancien lien et l'ancien abonnement agenda cessent de fonctionner. */
+export async function regenerateTrainerToken(f: FormData) {
+  await requireAdmin();
+  const id = str(f, "id");
+  if (!id) return;
+  await db.update(t.trainers).set({ calendarToken: crypto.randomUUID() }).where(eq(t.trainers.id, id));
+  done(`/formateurs/${id}`);
+}
+
 /** Depuis l'espace formateur : le jeton personnel tient lieu de connexion. */
 async function trainerFromToken(token: string) {
   const [trainer] = await db.select().from(t.trainers).where(eq(t.trainers.calendarToken, token));
