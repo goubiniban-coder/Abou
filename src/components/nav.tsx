@@ -36,7 +36,7 @@ const groups: { title: string; links: { href: string; label: string; icon: IconN
 export function Nav() {
   const pathname = usePathname();
   return (
-    <nav className="flex gap-1 overflow-x-auto md:flex-col md:gap-5 md:overflow-visible">
+    <nav aria-label="Navigation principale" className="flex gap-1 overflow-x-auto md:flex-col md:gap-5 md:overflow-visible">
       {groups.map((g) => (
         <div key={g.title} className="flex gap-1 md:flex-col">
           <p className="hidden px-3 pb-1 text-[11px] font-semibold tracking-wider text-mint-200/80 uppercase md:block">{g.title}</p>
@@ -46,6 +46,7 @@ export function Nav() {
               <Link
                 key={l.href}
                 href={l.href}
+                aria-current={active ? "page" : undefined}
                 className={`group flex shrink-0 items-center gap-2.5 rounded-xl px-3 py-2 text-sm whitespace-nowrap transition ${
                   active ? "bg-accent-400 font-semibold text-brand-900 shadow-sm" : "text-white/90 hover:bg-white/15 hover:text-white"
                 }`}

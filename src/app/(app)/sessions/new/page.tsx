@@ -1,5 +1,6 @@
 import type { Session } from "@/domain";
 import { loadReference } from "@/server/reference";
+import { PageHeader } from "@/components/ui";
 import { SessionForm } from "../session-form";
 
 export const metadata = { title: "Nouvelle session" };
@@ -28,7 +29,7 @@ export default async function NewSessionPage({ searchParams }: PageProps<"/sessi
   };
   return (
     <div className="space-y-4">
-      <h1 className="text-xl font-semibold">Nouvelle session</h1>
+      <PageHeader title="Nouvelle session" />
       <SessionForm reference={reference} initial={initial} isNew startDate={date} />
     </div>
   );

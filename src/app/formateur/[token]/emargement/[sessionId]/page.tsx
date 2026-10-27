@@ -6,6 +6,7 @@ import { getSession } from "@/server/planning";
 import { loadSessionRecords } from "@/server/attendance";
 import { signingOpen, slotKey } from "@/domain";
 import { formatDate, formatTime, fullName, slotKindLabel } from "@/lib/format";
+import { Icon } from "@/components/icon";
 import { Sheet } from "./sheet";
 
 export const metadata = { title: "Émargement" };
@@ -26,18 +27,19 @@ export default async function AttendancePage({ params, searchParams }: PageProps
   const records = await loadSessionRecords(sessionId);
 
   return (
-    <div className="mx-auto max-w-lg space-y-3 p-4 pb-16">
-      <Link href={`/formateur/${token}`} className="text-sm text-brand-700">← Mon planning</Link>
+    <main className="mx-auto max-w-lg space-y-3 p-4 pb-16">
+      <Link href={`/formateur/${token}`} className="btn-ghost -ml-3 text-brand-700">← Mon planning</Link>
       <header>
-        <p className="text-sm text-slate-500">Émargement</p>
-        <h1 className="text-xl font-bold">{course?.code} · {course?.title}</h1>
+        <p className="text-sm font-semibold text-brand-700">Émargement</p>
+        <h1 className="text-xl font-extrabold tracking-tight">{course?.code} · {course?.title}</h1>
+        <span className="mt-1 block h-1.5 w-10 rounded-full bg-accent-400" aria-hidden />
       </header>
 
       {!slot ? (
-        <p className="card p-4 text-sm text-slate-500">L&apos;émargement ouvre un quart d&apos;heure avant le début du premier créneau.</p>
+        <p className="card p-4 text-sm text-slate-600">L&apos;émargement ouvre un quart d&apos;heure avant le début du premier créneau.</p>
       ) : (
         <>
-          <nav className="flex gap-1 overflow-x-auto pb-1">
+          <nav aria-label="Créneaux" className="flex flex-wrap gap-1.5">
             {started.map((s) => {
               const active = slotKey(s.start) === slotKey(slot.start);
               const done = records.trainerSignatures.some((x) => slotKey(x.slotStart) === slotKey(s.start));
@@ -45,15 +47,21 @@ export default async function AttendancePage({ params, searchParams }: PageProps
                 <Link
                   key={s.start}
                   href={`?slot=${encodeURIComponent(slotKey(s.start))}`}
-                  className={`shrink-0 rounded-md border px-2 py-1 text-xs ${active ? "border-brand-500 bg-brand-50 font-semibold text-brand-700" : "border-slate-200 bg-white text-slate-600"}`}
+                  aria-current={active ? "page" : undefined}
+                  className={`inline-flex min-h-11 items-center gap-1 rounded-xl border px-3 text-xs ${active ? "border-brand-600 bg-brand-600 font-semibold text-white" : "border-slate-200 bg-white text-slate-700"}`}
                 >
                   {formatDate(s.start)} {formatTime(s.start)}
-                  {done && " ✓"}
+                  {done && (
+                    <>
+                      <Icon name="check" className={`size-3.5 ${active ? "text-accent-300" : "text-brand-600"}`} />
+                      <span className="sr-only">(feuille close)</span>
+                    </>
+                  )}
                 </Link>
               );
             })}
           </nav>
-          <p className="text-sm text-slate-600">
+          <p className="text-sm font-medium text-slate-700">
             {formatDate(slot.start)}, {formatTime(slot.start)} – {formatTime(slot.end)} · {slotKindLabel[slot.kind]}
           </p>
           <Sheet
@@ -72,6 +80,6 @@ export default async function AttendancePage({ params, searchParams }: PageProps
           />
         </>
       )}
-    </div>
+    </main>
   );
 }

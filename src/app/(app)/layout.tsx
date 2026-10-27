@@ -6,9 +6,12 @@ import { logout } from "@/app/auth-actions";
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex min-h-screen flex-col md:flex-row">
-      <aside className="bg-gradient-to-b from-brand-700 via-brand-600 to-brand-500 px-3 py-3 text-white md:sticky md:top-0 md:flex md:h-screen md:w-60 md:shrink-0 md:flex-col md:overflow-y-auto md:py-5">
+      <a href="#contenu" className="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-50 focus:rounded-xl focus:bg-accent-400 focus:px-4 focus:py-2 focus:font-semibold focus:text-brand-900">
+        Aller au contenu
+      </a>
+      <aside aria-label="Menu" className="bg-gradient-to-b from-brand-700 via-brand-600 to-brand-500 px-3 py-3 text-white md:sticky md:top-0 md:flex md:h-screen md:w-60 md:shrink-0 md:flex-col md:overflow-y-auto md:py-5">
         <div className="mb-3 flex items-center md:mb-6">
-          <Link href="/tableau-de-bord" className="flex items-center gap-2 px-3">
+          <Link href="/tableau-de-bord" className="flex items-center gap-2 rounded-xl px-3" aria-label="Optitam, tableau de bord">
             <span className="grid size-8 place-items-center rounded-xl bg-accent-400 text-brand-900 shadow-sm">
               <Icon name="calendar" className="size-[18px]" />
             </span>
@@ -29,7 +32,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           </button>
         </form>
       </aside>
-      <main className="min-w-0 flex-1 p-4 md:p-8">{children}</main>
+      <main id="contenu" tabIndex={-1} className="min-w-0 flex-1 p-4 focus:outline-none md:p-8">{children}</main>
     </div>
   );
 }

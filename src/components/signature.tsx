@@ -24,7 +24,9 @@ export function SignaturePad({ onCancel, onConfirm, pending }: { onCancel: () =>
       <svg
         ref={ref}
         viewBox={SIGNATURE_VIEWBOX}
-        className="aspect-[3/1] w-full touch-none rounded-md border-2 border-dashed border-slate-300 bg-white"
+        role="img"
+        aria-label={path ? "Signature tracée" : "Zone de signature : signez avec le doigt ou un stylet"}
+        className="aspect-[3/1] w-full touch-none rounded-xl border-2 border-dashed border-brand-300 bg-white"
         onPointerDown={(e) => {
           e.currentTarget.setPointerCapture(e.pointerId);
           drawing.current = true;
@@ -38,15 +40,15 @@ export function SignaturePad({ onCancel, onConfirm, pending }: { onCancel: () =>
       >
         <path d={path} fill="none" stroke="#0f172a" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round" />
         {!path && (
-          <text x={W / 2} y={H / 2 + 5} textAnchor="middle" className="fill-slate-300 text-[14px] select-none">
+          <text x={W / 2} y={H / 2 + 5} textAnchor="middle" className="fill-slate-500 text-[14px] select-none">
             Signez ici
           </text>
         )}
       </svg>
       <div className="mt-2 flex gap-2">
-        <button type="button" className="btn-secondary" onClick={onCancel}>Annuler</button>
-        <button type="button" className="btn-secondary" onClick={() => setPath("")} disabled={!path}>Effacer</button>
-        <button type="button" className="btn-primary ml-auto" disabled={!path.includes("L") || pending} onClick={() => onConfirm(path)}>
+        <button type="button" className="btn-secondary min-h-11" onClick={onCancel}>Annuler</button>
+        <button type="button" className="btn-secondary min-h-11" onClick={() => setPath("")} disabled={!path}>Effacer</button>
+        <button type="button" className="btn-primary ml-auto min-h-11" disabled={!path.includes("L") || pending} onClick={() => onConfirm(path)}>
           {pending ? "Enregistrement…" : "Valider la signature"}
         </button>
       </div>

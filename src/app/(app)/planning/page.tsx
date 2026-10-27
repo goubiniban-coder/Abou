@@ -2,15 +2,17 @@ import Link from "next/link";
 import { addDays, detectAllConflicts, mondayOf, parisDay, trainerSlots, type Conflict } from "@/domain";
 import { formatDay, fullName } from "@/lib/format";
 import { loadContext } from "@/server/planning";
+import { Icon, type IconName } from "@/components/icon";
+import { PageHeader, SeverityDot } from "@/components/ui";
 import { Timeline, type TimelineBlock, type TimelineRow } from "./timeline";
 import type { PlanningView } from "@/app/actions";
 
 export const metadata = { title: "Planning" };
 
-const views: { id: PlanningView; label: string }[] = [
-  { id: "trainer", label: "Formateurs" },
-  { id: "room", label: "Salles" },
-  { id: "equipment", label: "Matériel" },
+const views: { id: PlanningView; label: string; icon: IconName }[] = [
+  { id: "trainer", label: "Formateurs", icon: "user" },
+  { id: "room", label: "Salles", icon: "door" },
+  { id: "equipment", label: "Matériel", icon: "truck" },
 ];
 
 export default async function PlanningPage({ searchParams }: PageProps<"/planning">) {
@@ -81,56 +83,71 @@ export default async function PlanningPage({ searchParams }: PageProps<"/plannin
     return `/planning?${p}`;
   };
 
+  const weekLabel = `${formatDay(monday, { day: "numeric", month: "long" })} – ${formatDay(lastDay, { day: "numeric", month: "long", year: "numeric" })}`;
+  const errors = weekConflicts.filter((c) => c.severity === "error").length;
+
   return (
     <div className="space-y-4">
-      <div className="flex flex-wrap items-center gap-3">
-        <h1 className="text-xl font-semibold">Planning</h1>
-        <div className="flex rounded-md border border-slate-300 bg-white p-0.5 text-sm">
+      <PageHeader title="Planning" action={{ href: `/sessions/new?date=${monday}`, label: "Nouvelle session" }}>
+        <nav aria-label="Vue du planning" className="segmented">
           {views.map((v) => (
-            <Link key={v.id} href={qs({ view: v.id })} className={`rounded px-3 py-1 ${v.id === view ? "bg-brand-600 text-white" : "text-slate-600 hover:bg-slate-100"}`}>
+            <Link key={v.id} href={qs({ view: v.id })} aria-current={v.id === view ? "page" : undefined} className="segment">
+              <Icon name={v.icon} className="size-4" />
               {v.label}
             </Link>
           ))}
-        </div>
-        <div className="flex items-center gap-1 text-sm">
-          <Link className="btn-secondary" href={qs({ week: addDays(monday, -7) })} aria-label="Semaine précédente">←</Link>
-          <Link className="btn-secondary" href={qs({ week: mondayOf(today) })}>Aujourd&apos;hui</Link>
-          <Link className="btn-secondary" href={qs({ week: addDays(monday, 7) })} aria-label="Semaine suivante">→</Link>
-          <span className="ml-2 font-medium text-slate-700">
-            {formatDay(monday, { day: "numeric", month: "long" })} – {formatDay(lastDay, { day: "numeric", month: "long", year: "numeric" })}
-          </span>
-        </div>
-        <div className="flex items-center gap-1 text-sm">
-          <Link href={qs({ site: undefined })} className={`rounded px-2 py-1 ${!site ? "font-semibold text-brand-700" : "text-slate-600"}`}>Tous les sites</Link>
+        </nav>
+      </PageHeader>
+
+      <div className="card flex flex-wrap items-center gap-x-4 gap-y-2 p-2">
+        <nav aria-label="Semaine" className="flex items-center gap-1">
+          <Link className="btn-secondary size-11 p-0" href={qs({ week: addDays(monday, -7) })} aria-label="Semaine précédente">
+            <Icon name="arrow" className="size-4 rotate-180" />
+          </Link>
+          <Link className="btn-secondary min-h-11" href={qs({ week: mondayOf(today) })}>Aujourd&apos;hui</Link>
+          <Link className="btn-secondary size-11 p-0" href={qs({ week: addDays(monday, 7) })} aria-label="Semaine suivante">
+            <Icon name="arrow" className="size-4" />
+          </Link>
+        </nav>
+        <p className="font-semibold text-brand-900" aria-live="polite">
+          <span className="sr-only">Semaine du </span>
+          {weekLabel}
+        </p>
+        <nav aria-label="Site" className="segmented">
+          <Link href={qs({ site: undefined })} aria-current={!site ? "page" : undefined} className="segment">Tous les sites</Link>
           {ctx.sites.map((s) => (
-            <Link key={s.id} href={qs({ site: s.id })} className={`rounded px-2 py-1 ${site === s.id ? "font-semibold text-brand-700" : "text-slate-600"}`}>{s.name}</Link>
+            <Link key={s.id} href={qs({ site: s.id })} aria-current={site === s.id ? "page" : undefined} className="segment">{s.name}</Link>
           ))}
-        </div>
-        <Link href={qs({ weekend: dayCount === 7 ? undefined : "1" })} className="text-sm text-slate-600 hover:underline">
+        </nav>
+        <Link href={qs({ weekend: dayCount === 7 ? undefined : "1" })} className="btn-ghost ml-auto">
           {dayCount === 7 ? "Masquer le week-end" : "Afficher le week-end"}
         </Link>
-        <Link href={`/sessions/new?date=${monday}`} className="btn-primary ml-auto">Nouvelle session</Link>
       </div>
 
       <Timeline view={view} days={days} today={today} rows={rows} blocks={blocks} />
 
-      <section className="card p-4">
-        <h2 className="mb-2 text-sm font-semibold">
-          {weekConflicts.length === 0 ? "Aucun conflit cette semaine" : `${weekConflicts.length} conflit${weekConflicts.length > 1 ? "s" : ""} cette semaine`}
+      <section className={`card p-4 ${errors ? "border-red-200" : weekConflicts.length ? "border-accent-300" : "border-brand-200 bg-brand-50"}`} aria-labelledby="conflits-semaine">
+        <h2 id="conflits-semaine" className="flex items-center gap-2 text-sm font-semibold">
+          <span className={`grid size-7 place-items-center rounded-lg ${weekConflicts.length ? "bg-red-100 text-red-700" : "bg-brand-600 text-white"}`} aria-hidden>
+            <Icon name={weekConflicts.length ? "alert" : "check"} className="size-4" />
+          </span>
+          {weekConflicts.length === 0 ? "Aucun conflit cette semaine, tout roule !" : `${weekConflicts.length} conflit${weekConflicts.length > 1 ? "s" : ""} cette semaine`}
         </h2>
-        <ul className="space-y-1 text-sm">
-          {weekConflicts.map((c, i) => {
-            const course = ctx.courses.find((co) => co.id === ctx.sessions.find((s) => s.id === c.sessionId)?.courseId);
-            return (
-              <li key={i} className="flex gap-2">
-                <span className={`mt-1.5 h-2 w-2 shrink-0 rounded-full ${c.severity === "error" ? "bg-red-500" : "bg-amber-400"}`} />
-                <Link href={`/sessions/${c.sessionId}`} className="hover:underline">
-                  <span className="font-medium">{course?.code}</span> : {c.message}
-                </Link>
-              </li>
-            );
-          })}
-        </ul>
+        {weekConflicts.length > 0 && (
+          <ul className="mt-2 space-y-1 text-sm">
+            {weekConflicts.map((c, i) => {
+              const course = ctx.courses.find((co) => co.id === ctx.sessions.find((s) => s.id === c.sessionId)?.courseId);
+              return (
+                <li key={i} className="flex gap-2">
+                  <SeverityDot severity={c.severity} />
+                  <Link href={`/sessions/${c.sessionId}`} className="underline decoration-slate-300 underline-offset-2 hover:decoration-brand-600">
+                    <span className="font-semibold">{course?.code}</span> : {c.message}
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
+        )}
       </section>
     </div>
   );

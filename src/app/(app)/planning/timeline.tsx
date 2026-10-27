@@ -1,9 +1,11 @@
 "use client";
 
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, useTransition, type DragEvent } from "react";
 import { moveSessionAction, type PlanningView } from "@/app/actions";
-import { formatDay, roleLabel } from "@/lib/format";
+import { Icon } from "@/components/icon";
+import { formatDay, roleLabel, statusLabel } from "@/lib/format";
 
 export interface TimelineRow {
   id: string | null;
@@ -90,24 +92,29 @@ export function Timeline({ view, days, today, rows, blocks }: { view: PlanningVi
 
   return (
     <div className="card overflow-hidden">
-      {message && (
-        <div className={`flex justify-between px-4 py-2 text-sm ${message.tone === "ok" ? "bg-emerald-50 text-emerald-800" : message.tone === "warn" ? "bg-amber-50 text-amber-800" : "bg-red-50 text-red-800"}`}>
-          {message.text}
-          <button onClick={() => setMessage(null)} aria-label="Fermer">×</button>
-        </div>
-      )}
-      <div className={`overflow-x-auto ${pending ? "opacity-60" : ""}`}>
+      <div role="status" aria-live="polite">
+        {message && (
+          <div className={`flex items-center justify-between gap-2 px-4 py-1 text-sm font-medium ${message.tone === "ok" ? "bg-brand-100 text-brand-900" : message.tone === "warn" ? "bg-accent-100 text-amber-900" : "bg-red-50 text-red-800"}`}>
+            {message.text}
+            <button onClick={() => setMessage(null)} className="btn-ghost text-current" aria-label="Fermer le message">✕</button>
+          </div>
+        )}
+      </div>
+      <div className={`overflow-x-auto ${pending ? "opacity-60" : ""}`} aria-busy={pending}>
         <div className="min-w-[56rem]">
           {/* En-tête des jours */}
-          <div className="sticky top-0 z-10 flex border-b border-slate-200 bg-slate-50 text-xs">
-            <div className="w-44 shrink-0 border-r border-slate-200 px-3 py-2 font-medium text-slate-500">
+          <div className="sticky top-0 z-10 flex border-b border-slate-200 bg-mint-100/70 text-xs">
+            <div className="w-44 shrink-0 border-r border-slate-200 px-3 py-2 font-semibold text-brand-800">
               {view === "trainer" ? "Formateur" : view === "room" ? "Salle" : "Matériel"}
             </div>
             <div className="grid flex-1" style={{ gridTemplateColumns: gridTemplate }}>
               {days.map((d) => (
-                <div key={d} className={`col-span-2 border-r border-slate-200 px-2 py-1 text-center ${d === today ? "bg-brand-50 font-semibold text-brand-700" : "text-slate-600"}`}>
-                  <div className="first-letter:uppercase">{formatDay(d)}</div>
-                  <div className="flex justify-around text-[10px] text-slate-400"><span>matin</span><span>après-midi</span></div>
+                <div key={d} className={`col-span-2 border-r border-slate-200 px-2 py-1 text-center ${d === today ? "bg-accent-200 font-bold text-brand-900" : "font-medium text-slate-700"}`}>
+                  <div className="first-letter:uppercase">
+                    {formatDay(d)}
+                    {d === today && <span className="ml-1 rounded-full bg-brand-700 px-1.5 py-px text-[10px] text-white">aujourd&apos;hui</span>}
+                  </div>
+                  <div className="flex justify-around text-[11px] font-normal text-slate-600" aria-hidden><span>matin</span><span>après-midi</span></div>
                 </div>
               ))}
             </div>
@@ -118,8 +125,8 @@ export function Timeline({ view, days, today, rows, blocks }: { view: PlanningVi
             return (
               <div key={row.id ?? "none"} className="flex border-b border-slate-100">
                 <div className="w-44 shrink-0 border-r border-slate-200 px-3 py-2">
-                  <div className="truncate text-sm font-medium">{row.label}</div>
-                  {row.sub && <div className="truncate text-xs text-slate-500">{row.sub}</div>}
+                  <div className="truncate text-sm font-semibold">{row.label}</div>
+                  {row.sub && <div className="truncate text-xs text-slate-600">{row.sub}</div>}
                 </div>
                 <div className="relative flex-1">
                   {/* Cellules de fond : cibles du glisser-déposer */}
@@ -129,7 +136,7 @@ export function Timeline({ view, days, today, rows, blocks }: { view: PlanningVi
                     return (
                       <div
                         key={c}
-                        className={`border-r ${c % 2 ? "border-slate-200" : "border-slate-100 border-dashed"} ${days[Math.floor(c / 2)] === today ? "bg-brand-50/40" : ""} ${hover === id ? "bg-brand-100" : ""}`}
+                        className={`border-r ${c % 2 ? "border-slate-200" : "border-slate-100 border-dashed"} ${days[Math.floor(c / 2)] === today ? "bg-accent-100/50" : ""} ${hover === id ? "bg-brand-100 ring-2 ring-brand-400 ring-inset" : ""}`}
                         onDragOver={(e) => {
                           e.preventDefault();
                           setHover(id);
@@ -175,11 +182,12 @@ export function Timeline({ view, days, today, rows, blocks }: { view: PlanningVi
           })}
         </div>
       </div>
-      <div className="flex flex-wrap gap-4 border-t border-slate-200 px-4 py-2 text-xs text-slate-500">
+      <div className="flex flex-wrap gap-x-4 gap-y-1 border-t border-slate-200 bg-mint-50 px-4 py-2 text-xs text-slate-600">
         <span>Glisser une session pour la déplacer (autre jour ou autre ligne).</span>
         <span>Double-cliquer une case vide pour créer une session.</span>
-        <span className="flex items-center gap-1"><span className="h-3 w-3 rounded-sm border-2 border-red-500" /> conflit bloquant</span>
-        <span className="flex items-center gap-1"><span className="h-3 w-3 rounded-sm border-2 border-dashed border-slate-400" /> brouillon</span>
+        <span>Au clavier : Tab puis Entrée ouvre la session, où l&apos;on change dates et ressources.</span>
+        <span className="flex items-center gap-1"><span className="size-3 rounded-sm border-2 border-red-500" aria-hidden /> conflit bloquant</span>
+        <span className="flex items-center gap-1"><span className="size-3 rounded-sm border-2 border-dashed border-slate-500" aria-hidden /> brouillon</span>
       </div>
     </div>
   );
@@ -202,9 +210,9 @@ function BlockCard({
   onDropOnBlock: (col: number) => void;
   dragging: boolean;
 }) {
-  const router = useRouter();
   const hasError = block.conflicts.some((c) => c.severity === "error");
   const hasWarning = block.conflicts.length > 0;
+  const draft = block.status === "draft";
   const tooltip = [
     `${block.title} · ${block.subtitle}`,
     `${block.trainees} inscrit(s)`,
@@ -212,7 +220,9 @@ function BlockCard({
     ...block.conflicts.map((c) => `⚠ ${c.message}`),
   ].join("\n");
   return (
-    <div
+    // Un lien : la session s'ouvre aussi au clavier (Tab puis Entrée).
+    <Link
+      href={`/sessions/${block.sessionId}`}
       draggable
       onDragStart={onDragStart}
       onDragEnd={onDragEnd}
@@ -224,22 +234,32 @@ function BlockCard({
         const ratio = (e.clientX - rect.left) / rect.width;
         onDropOnBlock(from + Math.min(to - from, Math.floor(ratio * (to - from + 1))));
       }}
-      onClick={() => router.push(`/sessions/${block.sessionId}`)}
       title={tooltip}
-      style={{ gridColumn: `${from + 1} / ${to + 2}`, borderLeftColor: block.color, pointerEvents: dragging ? "none" : "auto" }}
-      className={`z-[1] m-0.5 cursor-grab overflow-hidden rounded-md border border-l-4 bg-white px-2 py-1 text-xs shadow-sm hover:shadow active:cursor-grabbing ${
-        hasError ? "border-red-500 ring-1 ring-red-300" : hasWarning ? "border-amber-400" : "border-slate-200"
-      } ${block.status === "draft" ? "border-dashed bg-slate-50" : ""}`}
+      style={{
+        gridColumn: `${from + 1} / ${to + 2}`,
+        borderLeftColor: block.color,
+        backgroundColor: draft ? undefined : `color-mix(in srgb, ${block.color} 9%, white)`,
+        pointerEvents: dragging ? "none" : "auto",
+      }}
+      className={`z-[1] m-0.5 block cursor-grab overflow-hidden rounded-lg border border-l-4 px-2 py-1 text-xs shadow-sm transition hover:-translate-y-px hover:shadow-md active:cursor-grabbing ${
+        hasError ? "border-red-500 ring-1 ring-red-300" : hasWarning ? "border-accent-500" : "border-slate-200"
+      } ${draft ? "border-dashed bg-white" : ""}`}
     >
-      <div className="flex items-center gap-1 font-semibold" style={{ color: block.color }}>
+      <span className="flex items-center gap-1 font-bold text-slate-900">
         {block.title}
-        {hasError && <span className="text-red-600" aria-label="Conflit">⚠</span>}
-      </div>
-      <div className="truncate text-slate-600">{block.subtitle}</div>
-      <div className="text-[10px] text-slate-500">
+        {draft && <span className="rounded-full bg-accent-200 px-1.5 text-[10px] font-semibold text-brand-900">{statusLabel.draft}</span>}
+        {hasError && (
+          <>
+            <Icon name="alert" className="size-3.5 text-red-600" />
+            <span className="sr-only">, conflit bloquant</span>
+          </>
+        )}
+      </span>
+      <span className="block truncate text-slate-700">{block.subtitle}</span>
+      <span className="block text-[11px] text-slate-600">
         {block.trainees} inscrit{block.trainees > 1 ? "s" : ""}
         {block.roles.length > 0 && ` · ${block.roles.map((r) => roleLabel[r]).join(", ")}`}
-      </div>
-    </div>
+      </span>
+    </Link>
   );
 }

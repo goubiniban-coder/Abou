@@ -30,10 +30,13 @@ export async function AttendancePanel({ session, course }: { session: Session; c
         <h2 className="mb-2 text-sm font-semibold">Documents</h2>
         <div className="flex flex-wrap gap-2">
           {docs.map(([doc, label]) => (
-            <a key={doc} href={`/documents/${session.id}/${doc}`} target="_blank" className="btn-secondary">{label}</a>
+            <a key={doc} href={`/documents/${session.id}/${doc}`} target="_blank" rel="noopener" className="btn-secondary min-h-11">
+              {label}
+              <span className="sr-only"> (nouvel onglet)</span>
+            </a>
           ))}
         </div>
-        <p className="mt-2 text-xs text-slate-500">Les documents s&apos;ouvrent dans un nouvel onglet, prêts à imprimer ou à enregistrer en PDF. Identité de l&apos;organisme : menu Paramètres.</p>
+        <p className="mt-2 text-xs text-slate-600">Les documents s&apos;ouvrent dans un nouvel onglet, prêts à imprimer ou à enregistrer en PDF. Identité de l&apos;organisme : menu Paramètres.</p>
       </section>
 
       <section>
@@ -42,7 +45,7 @@ export async function AttendancePanel({ session, course }: { session: Session; c
           {sheet.map((row) => {
             const future = Date.parse(row.slot.start) > now.getTime();
             return (
-              <tr key={row.slot.start} className={future ? "text-slate-400" : ""}>
+              <tr key={row.slot.start} className={future ? "text-slate-500" : ""}>
                 <td>{formatDate(row.slot.start)} {formatTime(row.slot.start)} · {slotKindLabel[row.slot.kind]}</td>
                 <td>{row.present.length}</td>
                 <td>{row.absent.length || ""}</td>
@@ -52,7 +55,7 @@ export async function AttendancePanel({ session, course }: { session: Session; c
             );
           })}
         </Table>
-        <p className="mt-1 text-xs text-slate-500">Le formateur fait signer les stagiaires sur son téléphone, depuis son espace formateur.</p>
+        <p className="mt-1 text-xs text-slate-600">Le formateur fait signer les stagiaires sur son téléphone, depuis son espace formateur.</p>
       </section>
 
       {(hasTests || records.results.length > 0) && (
@@ -87,7 +90,7 @@ export async function AttendancePanel({ session, course }: { session: Session; c
             })}
           </Table>
           {course.validityMonths ? (
-            <p className="mt-1 text-xs text-slate-500">Les certificats créés ici alimentent l&apos;écran Recyclages : l&apos;échéance est suivie automatiquement.</p>
+            <p className="mt-1 text-xs text-slate-600">Les certificats créés ici alimentent l&apos;écran Recyclages : l&apos;échéance est suivie automatiquement.</p>
           ) : null}
         </section>
       )}
