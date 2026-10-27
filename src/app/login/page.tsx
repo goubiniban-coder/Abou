@@ -1,18 +1,26 @@
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { Globe3D } from "@/components/globe-3d";
 import { Icon, type IconName } from "@/components/icon";
-import { AUTH_COOKIE, cookieOptions, createSessionToken } from "@/lib/auth";
+import { AUTH_COOKIE, checkPassword, cookieOptions, createSessionToken, safeNext } from "@/lib/auth";
+import { clearFailures, clientIp, isLocked, recordFailure } from "@/lib/login-throttle";
 
 export const metadata = { title: "Connexion" };
 
 async function login(form: FormData) {
   "use server";
-  const next = String(form.get("next") || "/tableau-de-bord");
-  const safeNext = next.startsWith("/") && !next.startsWith("//") ? next : "/tableau-de-bord";
-  if (String(form.get("password") ?? "") !== process.env.ADMIN_PASSWORD) redirect(`/login?error=1&next=${encodeURIComponent(safeNext)}`);
+  const next = safeNext(form.get("next"));
+  const ip = clientIp(await headers());
+  if (isLocked(ip)) redirect(`/login?error=locked&next=${encodeURIComponent(next)}`);
+  if (!(await checkPassword(String(form.get("password") ?? "")))) {
+    recordFailure(ip);
+    // Une seconde d'attente par échec : les essais en série deviennent très lents.
+    await new Promise((r) => setTimeout(r, 1000));
+    redirect(`/login?error=1&next=${encodeURIComponent(next)}`);
+  }
+  clearFailures(ip);
   (await cookies()).set(AUTH_COOKIE, await createSessionToken(), cookieOptions);
-  redirect(safeNext);
+  redirect(next);
 }
 
 const TITLE = ["Vos sessions", "tournent", "toutes seules."];
@@ -58,7 +66,7 @@ export default async function LoginPage({ searchParams }: PageProps<"/login">) {
             </p>
 
             <form action={login} className="rise card mt-7 flex max-w-md flex-col gap-3 p-4 sm:flex-row sm:items-end" style={{ animationDelay: "520ms" }}>
-              <input type="hidden" name="next" value={typeof next === "string" ? next : "/tableau-de-bord"} />
+              <input type="hidden" name="next" value={safeNext(next)} />
               <label className="block flex-1">
                 <span className="label">Mot de passe</span>
                 <input type="password" name="password" required className="input" />
@@ -67,7 +75,11 @@ export default async function LoginPage({ searchParams }: PageProps<"/login">) {
                 Se connecter <Icon name="arrow" className="size-4" />
               </button>
             </form>
-            {error && <p className="mt-3 max-w-md rounded-xl bg-red-50 p-2.5 text-sm text-red-700">Mot de passe incorrect.</p>}
+            {error && (
+              <p className="mt-3 max-w-md rounded-xl bg-red-50 p-2.5 text-sm text-red-700">
+                {error === "locked" ? "Trop d'essais. Réessayez dans 15 minutes." : "Mot de passe incorrect."}
+              </p>
+            )}
 
             <ul className="rise mt-6 flex max-w-md flex-wrap gap-2" style={{ animationDelay: "640ms" }}>
               {PROMISES.map((p) => (

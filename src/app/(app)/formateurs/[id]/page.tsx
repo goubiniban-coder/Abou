@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { eq } from "drizzle-orm";
 import { db, schema as t } from "@/db";
-import { saveTrainer } from "@/app/ref-actions";
+import { regenerateTrainerToken, saveTrainer } from "@/app/ref-actions";
 import { DeleteButton, Field, Unavailabilities, UsedError } from "@/components/ui";
 import { fullName } from "@/lib/format";
 import { loadContext } from "@/server/planning";
@@ -55,6 +55,11 @@ export default async function TrainerPage({ params, searchParams }: PageProps<"/
             <p className="text-slate-600">
               Abonnement agenda (Google, Outlook) : <code className="rounded bg-slate-100 px-1">/api/calendar/{row.calendarToken}.ics</code>
             </p>
+            <form action={regenerateTrainerToken} className="pt-2">
+              <input type="hidden" name="id" value={row.id} />
+              <button className="btn-secondary">Générer un nouveau lien</button>
+              <span className="ml-2 text-slate-500">L&apos;ancien lien et l&apos;ancien abonnement agenda ne marcheront plus.</span>
+            </form>
           </section>
           <Unavailabilities type="trainer" id={row.id} items={ctx.unavailabilities} back={back} since={new Date().toISOString()} />
           <DeleteButton kind="trainer" id={row.id} back={back} list="/formateurs" />
