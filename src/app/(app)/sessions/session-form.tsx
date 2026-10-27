@@ -2,7 +2,9 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useMemo, useState, useTransition } from "react";
+import { useEffect, useId, useMemo, useState, useTransition } from "react";
+import { Icon } from "@/components/icon";
+import { SeverityDot } from "@/components/ui";
 import { checkSessionAction, deleteSessionAction, saveSessionAction } from "@/app/actions";
 import { defaultSlots, type AssignmentRole, type Conflict, type Course, type Session, type Slot, type SlotKind } from "@/domain";
 import { addDays, parisClock, parisDay, parisTime } from "@/domain/time";
@@ -154,10 +156,10 @@ export function SessionForm({ reference, initial, isNew, startDate }: { referenc
         </section>
 
         <section className="card p-4">
-          <div className="mb-2 flex items-center justify-between">
+          <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
             <h2 className="text-sm font-semibold">Dates</h2>
-            <div className="flex gap-2">
-              <label className="text-xs text-slate-600">
+            <div className="flex items-center gap-2">
+              <label className="text-xs font-semibold text-slate-600">
                 Début{" "}
                 <input
                   type="date"
@@ -180,14 +182,14 @@ export function SessionForm({ reference, initial, isNew, startDate }: { referenc
               const set = (patch: Partial<DayRow>) => setRows(rows.map((x, j) => (j === i ? { ...x, ...patch } : x)));
               return (
                 <div key={i} className="flex flex-wrap items-center gap-2 text-sm">
-                  <input type="date" className="input w-auto" value={r.date} onChange={(e) => set({ date: e.target.value })} />
-                  <span className="w-28 text-xs text-slate-500 capitalize">{formatDay(r.date, { weekday: "long" })}</span>
-                  <label className="flex items-center gap-1"><input type="checkbox" checked={r.morning} onChange={(e) => set({ morning: e.target.checked })} /> Matin</label>
-                  <label className="flex items-center gap-1"><input type="checkbox" checked={r.afternoon} onChange={(e) => set({ afternoon: e.target.checked })} /> Après-midi</label>
-                  <select className="input w-auto" value={r.kind} onChange={(e) => set({ kind: e.target.value as SlotKind })}>
+                  <input type="date" className="input w-auto" aria-label={`Date du jour ${i + 1}`} value={r.date} onChange={(e) => set({ date: e.target.value })} />
+                  <span className="w-28 text-xs text-slate-600 capitalize" aria-hidden>{formatDay(r.date, { weekday: "long" })}</span>
+                  <label className="flex min-h-11 items-center gap-1.5"><input type="checkbox" className="size-4" checked={r.morning} onChange={(e) => set({ morning: e.target.checked })} /> Matin</label>
+                  <label className="flex min-h-11 items-center gap-1.5"><input type="checkbox" className="size-4" checked={r.afternoon} onChange={(e) => set({ afternoon: e.target.checked })} /> Après-midi</label>
+                  <select className="input w-auto" aria-label={`Type du jour ${i + 1}`} value={r.kind} onChange={(e) => set({ kind: e.target.value as SlotKind })}>
                     {(Object.keys(slotKindLabel) as SlotKind[]).map((k) => <option key={k} value={k}>{slotKindLabel[k]}</option>)}
                   </select>
-                  <button type="button" className="text-slate-400 hover:text-red-600" onClick={() => setRows(rows.filter((_, j) => j !== i))} aria-label="Retirer ce jour">✕</button>
+                  <button type="button" className="btn-ghost w-11 px-0 hover:text-red-700" onClick={() => setRows(rows.filter((_, j) => j !== i))} aria-label={`Retirer le ${formatDay(r.date, { weekday: "long", day: "numeric", month: "long" })}`}>✕</button>
                 </div>
               );
             })}
@@ -224,10 +226,10 @@ export function SessionForm({ reference, initial, isNew, startDate }: { referenc
                   const sug = check?.suggestions.equipment[kind]?.find((s) => s.id === e.id);
                   const checked = session.equipmentIds.includes(e.id);
                   return (
-                    <label key={e.id} className={`flex items-center gap-1.5 rounded-md border px-2 py-1 text-sm ${checked ? "border-brand-500 bg-brand-50" : "border-slate-200"}`} title={sug?.conflicts.join("\n")}>
+                    <label key={e.id} className={`flex min-h-11 items-center gap-1.5 rounded-xl border px-3 text-sm transition ${checked ? "border-brand-500 bg-brand-50 font-medium" : "border-slate-200 hover:border-brand-300"}`} title={sug?.conflicts.join("\n")}>
                       <input type="checkbox" checked={checked} onChange={(ev) => update({ equipmentIds: ev.target.checked ? [...session.equipmentIds, e.id] : session.equipmentIds.filter((x) => x !== e.id) })} />
                       {e.name}
-                      {sug && !checked && <span className={sug.available ? "text-emerald-600" : "text-red-600"}>{sug.available ? "libre" : "pris"}</span>}
+                      {sug && !checked && <span className={`text-xs font-semibold ${sug.available ? "text-brand-700" : "text-red-700"}`}>{sug.available ? "libre" : "pris"}</span>}
                     </label>
                   );
                 })}
@@ -241,18 +243,18 @@ export function SessionForm({ reference, initial, isNew, startDate }: { referenc
             <h2 className="text-sm font-semibold">
               Stagiaires ({session.traineeIds.length}{course ? ` / ${course.maxTrainees}` : ""})
             </h2>
-            <input className="input max-w-56" placeholder="Rechercher" value={traineeFilter} onChange={(e) => setTraineeFilter(e.target.value)} />
+            <input type="search" className="input max-w-56" placeholder="Rechercher" aria-label="Rechercher un stagiaire" value={traineeFilter} onChange={(e) => setTraineeFilter(e.target.value)} />
           </div>
           <div className="grid max-h-64 gap-1 overflow-y-auto sm:grid-cols-2">
             {shownTrainees.map((t) => (
-              <label key={t.id} className="flex items-center gap-2 text-sm">
+              <label key={t.id} className="flex min-h-9 items-center gap-2 rounded-lg px-1 text-sm hover:bg-mint-50">
                 <input
                   type="checkbox"
                   checked={session.traineeIds.includes(t.id)}
                   onChange={(e) => update({ traineeIds: e.target.checked ? [...session.traineeIds, t.id] : session.traineeIds.filter((x) => x !== t.id) })}
                 />
                 {fullName(t)}
-                <span className="text-xs text-slate-400">{clients.find((c) => c.id === t.clientId)?.name}</span>
+                <span className="text-xs text-slate-600">{clients.find((c) => c.id === t.clientId)?.name}</span>
               </label>
             ))}
           </div>
@@ -262,14 +264,14 @@ export function SessionForm({ reference, initial, isNew, startDate }: { referenc
       <aside className="space-y-4 lg:sticky lg:top-4 lg:self-start">
         <ConflictPanel conflicts={conflicts} loading={!check} />
         <div className="card space-y-2 p-4">
-          {error && <p className="text-sm text-red-700">{error}</p>}
+          {error && <p role="alert" className="rounded-xl bg-red-50 p-2 text-sm text-red-800">{error}</p>}
           <button className="btn-primary w-full" disabled={saving} onClick={() => save("confirmed")}>Confirmer la session</button>
           <button className="btn-secondary w-full" disabled={saving} onClick={() => save("draft")}>Enregistrer en brouillon</button>
           {!isNew && session.status !== "cancelled" && (
             <button className="btn-secondary w-full" disabled={saving} onClick={() => save("cancelled")}>Annuler la session</button>
           )}
           {!isNew && <button className="btn-danger w-full" disabled={saving} onClick={remove}>Supprimer</button>}
-          <Link href="/planning" className="block text-center text-sm text-slate-500 hover:underline">Retour au planning</Link>
+          <Link href="/planning" className="btn-ghost w-full">Retour au planning</Link>
         </div>
       </aside>
     </div>
@@ -292,11 +294,12 @@ function ResourcePicker({
   const ranked = suggestions ? [...options].sort((a, b) => (suggestions.find((s) => s.id === b.id)?.score ?? -9999) - (suggestions.find((s) => s.id === a.id)?.score ?? -9999)) : options;
   const best = suggestions?.find((s) => s.available && s.id !== value);
   const current = suggestions?.find((s) => s.id === value);
+  const id = useId();
   return (
     <div>
-      <label className="label">{label}</label>
+      <label className="label" htmlFor={id}>{label}</label>
       <div className="flex flex-wrap items-center gap-2">
-        <select className="input max-w-sm" value={value} onChange={(e) => onChange(e.target.value)}>
+        <select id={id} className="input max-w-sm" value={value} onChange={(e) => onChange(e.target.value)} aria-describedby={`${id}-why`}>
           <option value="">Non affecté</option>
           {ranked.map((o) => {
             const s = suggestions?.find((x) => x.id === o.id);
@@ -309,34 +312,53 @@ function ResourcePicker({
           })}
         </select>
         {!value && best && (
-          <button type="button" className="text-sm text-brand-700 hover:underline" onClick={() => onChange(best.id)} title={best.reasons.join("\n")}>
+          <button type="button" className="btn-accent min-h-11" onClick={() => onChange(best.id)} title={best.reasons.join("\n")}>
+            <Icon name="spark" className="size-4" />
             Suggestion : {options.find((o) => o.id === best.id)?.label}
           </button>
         )}
       </div>
-      {value && current && current.reasons.length > 0 && <p className="mt-1 text-xs text-slate-500">{current.reasons.join(" · ")}</p>}
-      {!value && best && <p className="mt-1 text-xs text-slate-500">{best.reasons.join(" · ")}</p>}
+      <p id={`${id}-why`} className="mt-1 text-xs text-slate-600 empty:hidden">
+        {value && current ? current.reasons.join(" · ") : !value && best ? best.reasons.join(" · ") : ""}
+      </p>
     </div>
   );
 }
 
+/** Résultat de la vérification à la volée, annoncé poliment aux lecteurs d'écran. */
 function ConflictPanel({ conflicts, loading }: { conflicts: Conflict[]; loading: boolean }) {
-  if (loading) return <div className="card p-4 text-sm text-slate-500">Vérification…</div>;
-  if (conflicts.length === 0)
-    return <div className="card border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-800">Aucun conflit détecté.</div>;
   return (
-    <div className="card p-4">
-      <h2 className="mb-2 text-sm font-semibold">{conflicts.length} point{conflicts.length > 1 ? "s" : ""} à régler</h2>
+    <div role="status" aria-live="polite">
+      <ConflictContent conflicts={conflicts} loading={loading} />
+    </div>
+  );
+}
+
+function ConflictContent({ conflicts, loading }: { conflicts: Conflict[]; loading: boolean }) {
+  if (loading) return <div className="card p-4 text-sm text-slate-600">Vérification…</div>;
+  if (conflicts.length === 0)
+    return (
+      <div className="card flex items-center gap-2 border-brand-200 bg-brand-50 p-4 text-sm font-medium text-brand-900">
+        <span className="grid size-7 place-items-center rounded-lg bg-brand-600 text-white" aria-hidden><Icon name="check" className="size-4" /></span>
+        Aucun conflit détecté, c&apos;est tout bon !
+      </div>
+    );
+  return (
+    <div className="card border-red-200 p-4">
+      <h2 className="mb-2 flex items-center gap-2 text-sm font-semibold">
+        <span className="grid size-7 place-items-center rounded-lg bg-red-100 text-red-700" aria-hidden><Icon name="alert" className="size-4" /></span>
+        {conflicts.length} point{conflicts.length > 1 ? "s" : ""} à régler
+      </h2>
       <ul className="space-y-2 text-sm">
         {conflicts.map((c, i) => (
           <li key={i} className="flex gap-2">
-            <span className={`mt-1.5 h-2 w-2 shrink-0 rounded-full ${c.severity === "error" ? "bg-red-500" : "bg-amber-400"}`} />
+            <SeverityDot severity={c.severity} />
             <span>
               {c.message}
               {c.otherSessionId && (
                 <>
                   {" "}
-                  <Link href={`/sessions/${c.otherSessionId}`} className="text-brand-700 hover:underline">Voir l&apos;autre session</Link>
+                  <Link href={`/sessions/${c.otherSessionId}`} className="font-medium text-brand-700 underline underline-offset-2">Voir l&apos;autre session</Link>
                 </>
               )}
             </span>

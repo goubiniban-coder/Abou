@@ -2,6 +2,8 @@ import Link from "next/link";
 import { detectAllConflicts, parisDay } from "@/domain";
 import { formatDay, fullName, statusLabel } from "@/lib/format";
 import { loadContext } from "@/server/planning";
+import { Icon } from "@/components/icon";
+import { Badge, CourseTag, PageHeader, statusTone } from "@/components/ui";
 
 export const metadata = { title: "Sessions" };
 
@@ -18,23 +20,20 @@ export default async function SessionsPage({ searchParams }: PageProps<"/session
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-wrap items-center gap-3">
-        <h1 className="text-xl font-semibold">Sessions</h1>
-        <Link href="/sessions" className={`text-sm ${!past ? "font-semibold text-brand-700" : "text-slate-600"}`}>À venir</Link>
-        <Link href="/sessions?past=1" className={`text-sm ${past ? "font-semibold text-brand-700" : "text-slate-600"}`}>Passées</Link>
-        <Link href="/sessions/new" className="btn-primary ml-auto">Nouvelle session</Link>
-      </div>
+      <PageHeader title="Sessions" action={{ href: "/sessions/new", label: "Nouvelle session" }}>
+        <nav aria-label="Période" className="segmented">
+          <Link href="/sessions" aria-current={!past ? "page" : undefined} className="segment">À venir</Link>
+          <Link href="/sessions?past=1" aria-current={past ? "page" : undefined} className="segment">Passées</Link>
+        </nav>
+      </PageHeader>
       <div className="card overflow-x-auto">
         <table className="w-full text-sm">
-          <thead className="bg-slate-50 text-left text-xs text-slate-500">
+          <caption className="sr-only">Sessions {past ? "passées" : "à venir"}</caption>
+          <thead className="bg-mint-100/70 text-left text-xs text-brand-800">
             <tr>
-              <th className="px-3 py-2">Dates</th>
-              <th className="px-3 py-2">Formation</th>
-              <th className="px-3 py-2">Lieu</th>
-              <th className="px-3 py-2">Formateurs</th>
-              <th className="px-3 py-2">Inscrits</th>
-              <th className="px-3 py-2">Statut</th>
-              <th className="px-3 py-2">Conflits</th>
+              {["Dates", "Formation", "Lieu", "Formateurs", "Inscrits", "Statut", "Conflits"].map((h) => (
+                <th key={h} scope="col" className="px-3 py-2 font-semibold">{h}</th>
+              ))}
             </tr>
           </thead>
           <tbody>
@@ -45,27 +44,36 @@ export default async function SessionsPage({ searchParams }: PageProps<"/session
               const n = conflicts.filter((c) => c.sessionId === s.id || c.otherSessionId === s.id).length;
               const trainers = [...new Set(s.assignments.map((a) => a.trainerId))].map((id) => ctx.trainers.find((t) => t.id === id)).filter((t) => t !== undefined);
               return (
-                <tr key={s.id} className="border-t border-slate-100 hover:bg-slate-50">
-                  <td className="px-3 py-2 whitespace-nowrap">
-                    <Link href={`/sessions/${s.id}`} className="hover:underline">
-                      {first ? formatDay(first) : "—"}
-                      {last && last !== first ? ` → ${formatDay(last)}` : ""}
+                <tr key={s.id} className="border-t border-slate-100 transition hover:bg-mint-50">
+                  <td className="px-3 py-2.5 whitespace-nowrap first-letter:uppercase">
+                    {first ? formatDay(first) : "—"}
+                    {last && last !== first ? ` → ${formatDay(last)}` : ""}
+                  </td>
+                  <td className="px-3 py-2.5">
+                    {/* Un seul lien par ligne, nommé par la formation. */}
+                    <Link href={`/sessions/${s.id}`} className="group inline-flex flex-wrap items-center gap-x-1.5 rounded-md">
+                      <CourseTag code={course?.code} color={course?.color} className="group-hover:underline" />
+                      <span className="text-slate-600">{course?.title}</span>
                     </Link>
                   </td>
-                  <td className="px-3 py-2">
-                    <Link href={`/sessions/${s.id}`} className="font-medium hover:underline" style={{ color: course?.color }}>{course?.code}</Link>{" "}
-                    <span className="text-slate-600">{course?.title}</span>
-                  </td>
-                  <td className="px-3 py-2">{s.mode === "intra" ? "Intra" : (room?.name ?? "—")} · {site?.name}</td>
-                  <td className="px-3 py-2">{trainers.map(fullName).join(", ") || "—"}</td>
-                  <td className="px-3 py-2">{s.traineeIds.length}{course ? ` / ${course.maxTrainees}` : ""}</td>
-                  <td className="px-3 py-2">{statusLabel[s.status]}</td>
-                  <td className="px-3 py-2">{n ? <span className="font-medium text-red-600">{n}</span> : <span className="text-emerald-600">0</span>}</td>
+                  <td className="px-3 py-2.5">{s.mode === "intra" ? "Intra" : (room?.name ?? "—")} · {site?.name}</td>
+                  <td className="px-3 py-2.5">{trainers.map(fullName).join(", ") || "—"}</td>
+                  <td className="px-3 py-2.5 tabular-nums">{s.traineeIds.length}{course ? ` / ${course.maxTrainees}` : ""}</td>
+                  <td className="px-3 py-2.5"><Badge tone={statusTone[s.status]}>{statusLabel[s.status]}</Badge></td>
+                  <td className="px-3 py-2.5">{n ? <Badge tone="red">{n} conflit{n > 1 ? "s" : ""}</Badge> : <Badge tone="green">Aucun</Badge>}</td>
                 </tr>
               );
             })}
             {sessions.length === 0 && (
-              <tr><td colSpan={7} className="px-3 py-6 text-center text-slate-500">Aucune session.</td></tr>
+              <tr>
+                <td colSpan={7} className="px-3 py-10 text-center">
+                  <span className="mx-auto mb-2 grid size-12 place-items-center rounded-2xl bg-accent-200 text-brand-800" aria-hidden>
+                    <Icon name="layers" />
+                  </span>
+                  <p className="font-semibold">{past ? "Aucune session passée." : "Aucune session à venir."}</p>
+                  {!past && <Link href="/sessions/new" className="mt-1 inline-block font-medium text-brand-700 underline underline-offset-2">Planifier une session</Link>}
+                </td>
+              </tr>
             )}
           </tbody>
         </table>

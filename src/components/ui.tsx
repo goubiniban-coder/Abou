@@ -4,17 +4,40 @@ import { deleteEntity, deleteUnavailability, addUnavailability } from "@/app/ref
 import type { ResourceType, Unavailability } from "@/domain";
 import { formatDate, formatTime } from "@/lib/format";
 
-export function PageHeader({ title, action }: { title: string; action?: { href: string; label: string } }) {
+export function PageHeader({ title, action, children }: { title: ReactNode; action?: { href: string; label: string }; children?: ReactNode }) {
   return (
     <div className="mb-5 flex flex-wrap items-center gap-3">
       <h1 className="text-2xl font-extrabold tracking-tight">
         {title}
-        <span className="mt-1 block h-1.5 w-10 rounded-full bg-accent-400" />
+        <span className="mt-1 block h-1.5 w-10 rounded-full bg-accent-400" aria-hidden />
       </h1>
+      {children}
       {action && <Link href={action.href} className="btn-primary ml-auto">{action.label}</Link>}
     </div>
   );
 }
+
+/** Code de formation précédé de sa pastille de couleur. Le texte reste foncé : la couleur seule n'est pas assez contrastée. */
+export function CourseTag({ code, color, className = "" }: { code?: string; color?: string; className?: string }) {
+  return (
+    <span className={`inline-flex items-center gap-1.5 font-semibold text-slate-900 ${className}`}>
+      <span className="size-2.5 shrink-0 rounded-full" style={{ backgroundColor: color ?? "#64748b" }} aria-hidden />
+      {code}
+    </span>
+  );
+}
+
+/** Pastille de gravité d'un conflit, avec son nom pour les lecteurs d'écran. */
+export function SeverityDot({ severity }: { severity: "error" | "warning" }) {
+  return (
+    <>
+      <span className={`mt-1.5 size-2 shrink-0 rounded-full ${severity === "error" ? "bg-red-500" : "bg-accent-500"}`} aria-hidden />
+      <span className="sr-only">{severity === "error" ? "Bloquant :" : "À vérifier :"}</span>
+    </>
+  );
+}
+
+export const statusTone = { draft: "amber", confirmed: "green", cancelled: "slate" } as const;
 
 export function Field({ label, children, hint, className = "" }: { label: string; children: ReactNode; hint?: string; className?: string }) {
   return (
@@ -31,7 +54,7 @@ export function Table({ head, children }: { head: string[]; children: ReactNode 
     <div className="card overflow-x-auto">
       <table className="w-full text-sm">
         <thead className="bg-mint-100/70 text-left text-xs text-brand-800">
-          <tr>{head.map((h) => <th key={h} className="px-3 py-2 font-medium">{h}</th>)}</tr>
+          <tr>{head.map((h) => <th key={h} scope="col" className="px-3 py-2 font-semibold">{h}</th>)}</tr>
         </thead>
         <tbody className="[&>tr]:border-t [&>tr]:border-slate-100 [&>tr]:transition [&>tr:hover]:bg-mint-50 [&_td]:px-3 [&_td]:py-2.5">{children}</tbody>
       </table>
@@ -82,7 +105,7 @@ export function Unavailabilities({ type, id, items, back, since }: { type: Resou
             <form action={deleteUnavailability} className="ml-auto">
               <input type="hidden" name="id" value={u.id} />
               <input type="hidden" name="back" value={back} />
-              <button className="text-xs text-slate-400 hover:text-red-600">Retirer</button>
+              <button className="btn-ghost text-xs hover:text-red-700">Retirer</button>
             </form>
           </li>
         ))}

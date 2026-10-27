@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { loadReference } from "@/server/reference";
 import { statusLabel } from "@/lib/format";
+import { Badge, CourseTag, PageHeader, statusTone } from "@/components/ui";
 import { SessionForm } from "../session-form";
 import { AttendancePanel } from "./attendance-panel";
 
@@ -14,10 +15,19 @@ export default async function SessionPage({ params }: PageProps<"/sessions/[id]"
   const course = reference.ctx.courses.find((c) => c.id === session.courseId);
   return (
     <div className="space-y-4">
-      <div className="flex items-center gap-3">
-        <h1 className="text-xl font-semibold">{course ? `${course.code} · ${course.title}` : "Session"}</h1>
-        <span className="rounded-full bg-slate-200 px-2 py-0.5 text-xs">{statusLabel[session.status]}</span>
-      </div>
+      <PageHeader
+        title={
+          course ? (
+            <>
+              <CourseTag code={course.code} color={course.color} className="font-extrabold" /> · {course.title}
+            </>
+          ) : (
+            "Session"
+          )
+        }
+      >
+        <Badge tone={statusTone[session.status]}>{statusLabel[session.status]}</Badge>
+      </PageHeader>
       <SessionForm reference={reference} initial={session} isNew={false} />
       {course && <AttendancePanel session={session} course={course} />}
     </div>
